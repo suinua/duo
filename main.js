@@ -1252,6 +1252,28 @@
         return string.replace(/[[\]{}()*+?.\\^$|]/g, "\\$&");
       return string;
     },
+    stringReplaceAllUnchecked(receiver, pattern, replacement) {
+      var t1 = A.stringReplaceAllUncheckedString(receiver, pattern, replacement);
+      return t1;
+    },
+    stringReplaceAllUncheckedString(receiver, pattern, replacement) {
+      var $length, t1, i, index;
+      if (pattern === "") {
+        if (receiver === "")
+          return replacement;
+        $length = receiver.length;
+        t1 = "" + replacement;
+        for (i = 0; i < $length; ++i)
+          t1 = t1 + receiver[i] + replacement;
+        return t1.charCodeAt(0) == 0 ? t1 : t1;
+      }
+      index = receiver.indexOf(pattern, 0);
+      if (index < 0)
+        return receiver;
+      if (receiver.length < 500 || replacement.indexOf("$", 0) >= 0)
+        return receiver.split(pattern).join(replacement);
+      return receiver.replace(new RegExp(A.quoteStringForRegExp(pattern), "g"), A.escapeReplacement(replacement));
+    },
     stringReplaceFirstUnchecked(receiver, pattern, replacement, startIndex) {
       return startIndex === 0 ? receiver.replace(pattern._nativeRegExp, A.escapeReplacement(replacement)) : A.stringReplaceFirstRE(receiver, pattern, replacement, startIndex);
     },
@@ -3575,20 +3597,22 @@
     StringBuffer: function StringBuffer(t0) {
       this._contents = t0;
     },
-    AnchorElement_AnchorElement() {
-      var e = document.createElement("a");
-      return e;
-    },
     AudioElement_AudioElement$_(src) {
       return new Audio();
     },
     Element_Element$html(html, treeSanitizer, validator) {
-      var t2,
+      var t2, it, result,
         t1 = document.body;
       t1.toString;
       t2 = type$._ChildNodeListLazy;
       t2 = new A.WhereIterable(new A._ChildNodeListLazy(B.BodyElement_methods.createFragment$3$treeSanitizer$validator(t1, html, treeSanitizer, validator)), t2._eval$1("bool(ListMixin.E)")._as(new A.Element_Element$html_closure()), t2._eval$1("WhereIterable<ListMixin.E>"));
-      return type$.Element._as(t2.get$single(t2));
+      it = t2.get$iterator(t2);
+      if (!it.moveNext$0())
+        A.throwExpression(A.IterableElementError_noElement());
+      result = it.get$current();
+      if (it.moveNext$0())
+        A.throwExpression(A.IterableElementError_tooMany());
+      return type$.Element._as(result);
     },
     Element__safeTagName(element) {
       var t1, exception,
@@ -3612,9 +3636,9 @@
       return new A._EventStreamSubscription(_target, _eventType, t1, false, $T._eval$1("_EventStreamSubscription<0>"));
     },
     _Html5NodeValidator$(uriPolicy) {
-      var t1 = A.AnchorElement_AnchorElement(),
-        t2 = type$.Location._as(window.location);
-      t1 = new A._Html5NodeValidator(new A._SameOriginUriPolicy(t1, t2));
+      var e = document.createElement("a"),
+        t1 = new A._SameOriginUriPolicy(e, type$.Location._as(window.location));
+      t1 = new A._Html5NodeValidator(t1);
       t1._Html5NodeValidator$1$uriPolicy(uriPolicy);
       return t1;
     },
@@ -3626,15 +3650,26 @@
       return true;
     },
     _Html5NodeValidator__uriAttributeValidator(element, attributeName, value, context) {
+      var t1, t2, t3;
       type$.Element._as(element);
       A._asString(attributeName);
       A._asString(value);
-      return type$._Html5NodeValidator._as(context).uriPolicy.allowsUri$1(value);
-    },
-    _CustomElementNodeValidator$(uriPolicy, allowedElements, allowedAttributes, allowedUriAttributes, allowTypeExtension, allowCustomTag) {
-      var t1 = type$.String;
-      t1 = new A._CustomElementNodeValidator(false, true, A.LinkedHashSet_LinkedHashSet(t1), A.LinkedHashSet_LinkedHashSet(t1), A.LinkedHashSet_LinkedHashSet(t1), uriPolicy);
-      t1._SimpleNodeValidator$4$allowedAttributes$allowedElements$allowedUriAttributes(uriPolicy, allowedAttributes, allowedElements, allowedUriAttributes);
+      t1 = type$._Html5NodeValidator._as(context).uriPolicy;
+      t2 = t1._hiddenAnchor;
+      B.AnchorElement_methods.set$href(t2, value);
+      t3 = t2.hostname;
+      t1 = t1._loc;
+      if (!(t3 == t1.hostname && t2.port === t1.port && t2.protocol === t1.protocol))
+        if (t3 === "")
+          if (t2.port === "") {
+            t1 = t2.protocol;
+            t1 = t1 === ":" || t1 === "";
+          } else
+            t1 = false;
+        else
+          t1 = false;
+      else
+        t1 = true;
       return t1;
     },
     _TemplatingNodeValidator$() {
@@ -3757,9 +3792,6 @@
     NodeValidatorBuilder: function NodeValidatorBuilder(t0) {
       this._validators = t0;
     },
-    NodeValidatorBuilder_allowCustomElement_closure: function NodeValidatorBuilder_allowCustomElement_closure(t0) {
-      this.tagNameUpper = t0;
-    },
     NodeValidatorBuilder_allowsElement_closure: function NodeValidatorBuilder_allowsElement_closure(t0) {
       this.element = t0;
     },
@@ -3773,15 +3805,6 @@
     _SimpleNodeValidator_closure: function _SimpleNodeValidator_closure() {
     },
     _SimpleNodeValidator_closure0: function _SimpleNodeValidator_closure0() {
-    },
-    _CustomElementNodeValidator: function _CustomElementNodeValidator(t0, t1, t2, t3, t4, t5) {
-      var _ = this;
-      _.allowTypeExtension = t0;
-      _.allowCustomTag = t1;
-      _.allowedElements = t2;
-      _.allowedAttributes = t3;
-      _.allowedUriAttributes = t4;
-      _.uriPolicy = t5;
     },
     _TemplatingNodeValidator: function _TemplatingNodeValidator(t0, t1, t2, t3, t4) {
       var _ = this;
@@ -3882,29 +3905,28 @@
       A._EventStreamSubscription$(t3._target, t3._eventType, t4, false, t2._precomputed1);
       t2 = t1.querySelector(".play-button");
       t2.toString;
-      t4 = J.get$onClick$x(t2);
-      t3 = t4.$ti;
-      A._EventStreamSubscription$(t4._target, t4._eventType, t3._eval$1("~(1)?")._as(new A.main_closure0(audioPlayer, t2)), false, t3._precomputed1);
-      t3 = t1.querySelector(".next-button");
-      t3.toString;
-      t3 = J.get$onClick$x(t3);
-      t2 = t3.$ti;
-      A._EventStreamSubscription$(t3._target, t3._eventType, t2._eval$1("~(1)?")._as(new A.main_closure1(audioPlayer)), false, t2._precomputed1);
+      t2 = J.get$onClick$x(t2);
+      t4 = t2.$ti;
+      A._EventStreamSubscription$(t2._target, t2._eventType, t4._eval$1("~(1)?")._as(new A.main_closure0(audioPlayer)), false, t4._precomputed1);
+      t4 = t1.querySelector(".next-button");
+      t4.toString;
+      t4 = J.get$onClick$x(t4);
+      t2 = t4.$ti;
+      A._EventStreamSubscription$(t4._target, t4._eventType, t2._eval$1("~(1)?")._as(new A.main_closure1(audioPlayer)), false, t2._precomputed1);
       t2 = t1.querySelector(".previous-button");
       t2.toString;
       t2 = J.get$onClick$x(t2);
-      t3 = t2.$ti;
-      A._EventStreamSubscription$(t2._target, t2._eventType, t3._eval$1("~(1)?")._as(new A.main_closure2(audioPlayer)), false, t3._precomputed1);
-      t3 = type$.Element;
-      A.checkTypeBound(t3, t3, "T", "querySelectorAll");
+      t4 = t2.$ti;
+      A._EventStreamSubscription$(t2._target, t2._eventType, t4._eval$1("~(1)?")._as(new A.main_closure2(audioPlayer)), false, t4._precomputed1);
+      t4 = type$.Element;
+      A.checkTypeBound(t4, t4, "T", "querySelectorAll");
       selectPhraseButtons = new A._FrozenElementList(t1.querySelectorAll(".select-phrase"), type$._FrozenElementList_Element);
       selectPhraseButtons.forEach$1(selectPhraseButtons, new A.main_closure3(audioPlayer));
     },
     main_closure: function main_closure() {
     },
-    main_closure0: function main_closure0(t0, t1) {
+    main_closure0: function main_closure0(t0) {
       this.audioPlayer = t0;
-      this.playButton = t1;
     },
     main_closure1: function main_closure1(t0) {
       this.audioPlayer = t0;
@@ -3954,7 +3976,7 @@
     Section__sortPhraseList_closure: function Section__sortPhraseList_closure() {
     },
     SectionMenu_setup() {
-      var html, _htmlValidator, t2,
+      var html, t2,
         _s10_ = "#section-1",
         t1 = $.ScriptPool__instance;
       if (t1 == null) {
@@ -3963,16 +3985,10 @@
         $.ScriptPool__instance = t1;
       }
       html = A.SectionMenu__generate(t1._sectionList);
-      t1 = A._setArrayType([], type$.JSArray_NodeValidator);
-      _htmlValidator = new A.NodeValidatorBuilder(t1);
-      B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
-      B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
-      t1 = type$.nullable_Iterable_String;
-      _htmlValidator.allowCustomElement$4$attributes$uriAttributes$uriPolicy("span", t1._as(A._setArrayType(["uk-icon", "phrase-number"], type$.JSArray_String)), t1._as(null), null);
       t1 = document;
       t2 = t1.querySelector(".section-menu-container");
       t2.toString;
-      J.setInnerHtml$2$validator$x(t2, html, _htmlValidator);
+      J.set$innerHtml$x(t2, html);
       t2 = t1.querySelector(_s10_).style;
       t2.display = "block";
       t2 = t1.querySelector(_s10_).style;
@@ -4014,6 +4030,15 @@
     },
     throwLateFieldADI(fieldName) {
       return A.throwExpression(new A.LateError("Field '" + fieldName + "' has been assigned during initialization."));
+    },
+    ViewService_updateNavBar(section, phrase) {
+      var t1 = document,
+        t2 = t1.querySelector(".section-number");
+      t2.toString;
+      J.set$innerHtml$x(t2, "Section : " + section.sectionNumber);
+      t1 = t1.querySelector(".phrase-number");
+      t1.toString;
+      J.set$innerHtml$x(t1, "No : " + phrase.phraseNumber);
     }
   },
   J = {
@@ -4151,6 +4176,9 @@
     set$_innerHtml$x(receiver, value) {
       return J.getInterceptor$x(receiver).set$_innerHtml(receiver, value);
     },
+    set$innerHtml$x(receiver, value) {
+      return J.getInterceptor$x(receiver).set$innerHtml(receiver, value);
+    },
     get$attributes$x(receiver) {
       return J.getInterceptor$x(receiver).get$attributes(receiver);
     },
@@ -4194,9 +4222,6 @@
     },
     replaceFirst$2$s(receiver, a0, a1) {
       return J.getInterceptor$s(receiver).replaceFirst$2(receiver, a0, a1);
-    },
-    setInnerHtml$2$validator$x(receiver, a0, a1) {
-      return J.getInterceptor$x(receiver).setInnerHtml$2$validator(receiver, a0, a1);
     },
     toLowerCase$0$s(receiver) {
       return J.getInterceptor$s(receiver).toLowerCase$0(receiver);
@@ -4306,10 +4331,6 @@
       if (!!receiver.fixed$length)
         A.throwExpression(A.UnsupportedError$("add"));
       receiver.push(value);
-    },
-    where$1(receiver, f) {
-      var t1 = A._arrayInstanceType(receiver);
-      return new A.WhereIterable(receiver, t1._eval$1("bool(1)")._as(f), t1._eval$1("WhereIterable<1>"));
     },
     forEach$1(receiver, f) {
       var end, i;
@@ -4973,19 +4994,19 @@
     call$1(o) {
       return this.getTag(o);
     },
-    $signature: 12
+    $signature: 11
   };
   A.initHooks_closure0.prototype = {
     call$2(o, tag) {
       return this.getUnknownTag(o, tag);
     },
-    $signature: 13
+    $signature: 12
   };
   A.initHooks_closure1.prototype = {
     call$1(tag) {
       return this.prototypeForTag(A._asString(tag));
     },
-    $signature: 14
+    $signature: 13
   };
   A.JSSyntaxRegExp.prototype = {
     toString$0(_) {
@@ -5092,7 +5113,7 @@
       t2 = this.span;
       t1.firstChild ? t1.removeChild(t2) : t1.appendChild(t2);
     },
-    $signature: 15
+    $signature: 14
   };
   A._AsyncRun__scheduleImmediateJsOverride_internalCallback.prototype = {
     call$0() {
@@ -5353,7 +5374,7 @@
     call$2(error, stackTrace) {
       this.$this._completeError$2(type$.Object._as(error), type$.StackTrace._as(stackTrace));
     },
-    $signature: 16
+    $signature: 15
   };
   A._Future__chainForeignFuture_closure1.prototype = {
     call$0() {
@@ -5418,7 +5439,7 @@
     call$1(_) {
       return this.originalSource;
     },
-    $signature: 17
+    $signature: 16
   };
   A._Future__propagateToListeners_handleValueCallback.prototype = {
     call$0() {
@@ -5735,7 +5756,7 @@
       t1._contents = t2 + ": ";
       t1._contents += A.S(v);
     },
-    $signature: 18
+    $signature: 17
   };
   A.MapMixin.prototype = {
     forEach$1(_, action) {
@@ -5912,16 +5933,6 @@
         ++count;
       return count;
     },
-    get$single(_) {
-      var result,
-        it = this.get$iterator(this);
-      if (!it.moveNext$0())
-        throw A.wrapException(A.IterableElementError_noElement());
-      result = it.get$current();
-      if (it.moveNext$0())
-        throw A.wrapException(A.IterableElementError_tooMany());
-      return result;
-    },
     toString$0(_) {
       return A.IterableBase_iterableToShortString(this, "(", ")");
     }
@@ -6029,18 +6040,16 @@
     createFragment$3$treeSanitizer$validator(receiver, html, treeSanitizer, validator) {
       var t1, t2, contextElement, fragment;
       if (treeSanitizer == null) {
-        if (validator == null) {
-          t1 = $.Element__defaultValidator;
-          if (t1 == null) {
-            t1 = A._setArrayType([], type$.JSArray_NodeValidator);
-            t2 = new A.NodeValidatorBuilder(t1);
-            B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
-            B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
-            $.Element__defaultValidator = t2;
-            validator = t2;
-          } else
-            validator = t1;
-        }
+        t1 = $.Element__defaultValidator;
+        if (t1 == null) {
+          t1 = A._setArrayType([], type$.JSArray_NodeValidator);
+          t2 = new A.NodeValidatorBuilder(t1);
+          B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
+          B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
+          $.Element__defaultValidator = t2;
+          validator = t2;
+        } else
+          validator = t1;
         t1 = $.Element__defaultSanitizer;
         if (t1 == null) {
           t1 = new A._ValidatingTreeSanitizer(validator);
@@ -6050,8 +6059,7 @@
           t1.validator = validator;
           treeSanitizer = t1;
         }
-      } else if (validator != null)
-        throw A.wrapException(A.ArgumentError$("validator can only be passed if treeSanitizer is null", null));
+      }
       if ($.Element__parseDocument == null) {
         t1 = document;
         t2 = t1.implementation;
@@ -6103,12 +6111,9 @@
     set$innerHtml(receiver, html) {
       this.setInnerHtml$1(receiver, html);
     },
-    setInnerHtml$2$validator(receiver, html, validator) {
+    setInnerHtml$1(receiver, html) {
       this.set$text(receiver, null);
-      receiver.appendChild(this.createFragment$3$treeSanitizer$validator(receiver, html, null, validator));
-    },
-    setInnerHtml$1($receiver, html) {
-      return this.setInnerHtml$2$validator($receiver, html, null);
+      receiver.appendChild(this.createFragment$3$treeSanitizer$validator(receiver, html, null, null));
     },
     set$_innerHtml(receiver, value) {
       receiver.innerHTML = value;
@@ -6125,7 +6130,7 @@
     call$1(e) {
       return type$.Element._is(type$.Node._as(e));
     },
-    $signature: 19
+    $signature: 18
   };
   A.Event.prototype = {$isEvent: 1};
   A.EventTarget.prototype = {
@@ -6284,17 +6289,14 @@
     }
   };
   A.TemplateElement.prototype = {
-    setInnerHtml$2$validator(receiver, html, validator) {
+    setInnerHtml$1(receiver, html) {
       var t1, fragment;
       this.set$text(receiver, null);
       t1 = receiver.content;
       t1.toString;
       J._clearChildren$0$x(t1);
-      fragment = this.createFragment$3$treeSanitizer$validator(receiver, html, null, validator);
+      fragment = this.createFragment$3$treeSanitizer$validator(receiver, html, null, null);
       receiver.content.appendChild(fragment);
-    },
-    setInnerHtml$1($receiver, html) {
-      return this.setInnerHtml$2$validator($receiver, html, null);
     },
     $isTemplateElement: 1
   };
@@ -6365,7 +6367,7 @@
     call$1(e) {
       return this.onData.call$1(type$.Event._as(e));
     },
-    $signature: 20
+    $signature: 19
   };
   A._Html5NodeValidator.prototype = {
     _Html5NodeValidator$1$uriPolicy(uriPolicy) {
@@ -6396,18 +6398,6 @@
     }
   };
   A.NodeValidatorBuilder.prototype = {
-    allowCustomElement$4$attributes$uriAttributes$uriPolicy(tagName, attributes, uriAttributes, uriPolicy) {
-      var tagNameUpper, t2, t3, t4,
-        t1 = type$.nullable_Iterable_String;
-      t1._as(attributes);
-      t1._as(uriAttributes);
-      tagNameUpper = tagName.toUpperCase();
-      t1 = A._arrayInstanceType(attributes);
-      t2 = t1._eval$1("String(1)")._as(new A.NodeValidatorBuilder_allowCustomElement_closure(tagNameUpper));
-      t3 = A.AnchorElement_AnchorElement();
-      t4 = type$.Location._as(window.location);
-      B.JSArray_methods.add$1(this._validators, A._CustomElementNodeValidator$(new A._SameOriginUriPolicy(t3, t4), A._setArrayType([tagNameUpper], type$.JSArray_String), new A.MappedListIterable(attributes, t2, t1._eval$1("MappedListIterable<1,String>")), null, false, true));
-    },
     allowsElement$1(element) {
       return B.JSArray_methods.any$1(this._validators, new A.NodeValidatorBuilder_allowsElement_closure(element));
     },
@@ -6416,34 +6406,24 @@
     },
     $isNodeValidator: 1
   };
-  A.NodeValidatorBuilder_allowCustomElement_closure.prototype = {
-    call$1($name) {
-      A._asString($name);
-      return this.tagNameUpper + "::" + $name.toLowerCase();
-    },
-    $signature: 6
-  };
   A.NodeValidatorBuilder_allowsElement_closure.prototype = {
     call$1(v) {
       return type$.NodeValidator._as(v).allowsElement$1(this.element);
     },
-    $signature: 7
+    $signature: 6
   };
   A.NodeValidatorBuilder_allowsAttribute_closure.prototype = {
     call$1(v) {
       return type$.NodeValidator._as(v).allowsAttribute$3(this.element, this.attributeName, this.value);
     },
-    $signature: 7
+    $signature: 6
   };
   A._SimpleNodeValidator.prototype = {
     _SimpleNodeValidator$4$allowedAttributes$allowedElements$allowedUriAttributes(uriPolicy, allowedAttributes, allowedElements, allowedUriAttributes) {
-      var t1, legalAttributes, extraUriAttributes;
+      var legalAttributes, extraUriAttributes, t1;
       this.allowedElements.addAll$1(0, allowedElements);
-      if (allowedAttributes == null)
-        allowedAttributes = B.List_empty;
-      t1 = J.getInterceptor$ax(allowedAttributes);
-      legalAttributes = t1.where$1(allowedAttributes, new A._SimpleNodeValidator_closure());
-      extraUriAttributes = t1.where$1(allowedAttributes, new A._SimpleNodeValidator_closure0());
+      legalAttributes = allowedAttributes.where$1(0, new A._SimpleNodeValidator_closure());
+      extraUriAttributes = allowedAttributes.where$1(0, new A._SimpleNodeValidator_closure0());
       this.allowedAttributes.addAll$1(0, legalAttributes);
       t1 = this.allowedUriAttributes;
       t1.addAll$1(0, B.List_empty);
@@ -6479,35 +6459,13 @@
     call$1(x) {
       return !B.JSArray_methods.contains$1(B.List_yrN, A._asString(x));
     },
-    $signature: 8
+    $signature: 7
   };
   A._SimpleNodeValidator_closure0.prototype = {
     call$1(x) {
       return B.JSArray_methods.contains$1(B.List_yrN, A._asString(x));
     },
-    $signature: 8
-  };
-  A._CustomElementNodeValidator.prototype = {
-    allowsElement$1(element) {
-      var isAttr, t1, _this = this;
-      if (_this.allowTypeExtension) {
-        isAttr = element.getAttribute("is");
-        if (isAttr != null) {
-          t1 = _this.allowedElements;
-          return t1.contains$1(0, isAttr.toUpperCase()) && t1.contains$1(0, A.Element__safeTagName(element));
-        }
-      }
-      return _this.allowCustomTag && _this.allowedElements.contains$1(0, A.Element__safeTagName(element));
-    },
-    allowsAttribute$3(element, attributeName, value) {
-      var _this = this;
-      if (_this.allowsElement$1(element)) {
-        if (_this.allowTypeExtension && attributeName === "is" && _this.allowedElements.contains$1(0, value.toUpperCase()))
-          return true;
-        return _this.super$_SimpleNodeValidator$allowsAttribute(element, attributeName, value);
-      }
-      return false;
-    }
+    $signature: 7
   };
   A._TemplatingNodeValidator.prototype = {
     allowsAttribute$3(element, attributeName, value) {
@@ -6524,7 +6482,7 @@
     call$1(attr) {
       return "TEMPLATE::" + A._asString(attr);
     },
-    $signature: 6
+    $signature: 20
   };
   A._SvgNodeValidator.prototype = {
     allowsElement$1(element) {
@@ -6567,28 +6525,7 @@
     },
     $isIterator: 1
   };
-  A._SameOriginUriPolicy.prototype = {
-    allowsUri$1(uri) {
-      var t2, t3,
-        t1 = this._hiddenAnchor;
-      B.AnchorElement_methods.set$href(t1, uri);
-      t2 = t1.hostname;
-      t3 = this._loc;
-      if (!(t2 == t3.hostname && t1.port === t3.port && t1.protocol === t3.protocol))
-        if (t2 === "")
-          if (t1.port === "") {
-            t1 = t1.protocol;
-            t1 = t1 === ":" || t1 === "";
-          } else
-            t1 = false;
-        else
-          t1 = false;
-      else
-        t1 = true;
-      return t1;
-    },
-    $isUriPolicy: 1
-  };
+  A._SameOriginUriPolicy.prototype = {$isUriPolicy: 1};
   A._ValidatingTreeSanitizer.prototype = {
     sanitizeTree$1(node) {
       var previousTreeModifications,
@@ -6781,7 +6718,7 @@
       t1._asyncComplete$1(t2._eval$1("1/")._as(r));
       return null;
     },
-    $signature: 9
+    $signature: 8
   };
   A.promiseToFuture_closure0.prototype = {
     call$1(e) {
@@ -6789,7 +6726,7 @@
         return this.completer.completeError$1(new A.NullRejectionException(e === undefined));
       return this.completer.completeError$1(e);
     },
-    $signature: 9
+    $signature: 8
   };
   A.ScriptElement0.prototype = {$isScriptElement0: 1};
   A.SvgElement.prototype = {
@@ -6797,15 +6734,12 @@
       this.setInnerHtml$1(receiver, value);
     },
     createFragment$3$treeSanitizer$validator(receiver, svg, treeSanitizer, validator) {
-      var t1, html, t2, fragment, svgFragment, root;
-      if (validator == null) {
+      var html, t2, fragment, svgFragment, root,
         t1 = A._setArrayType([], type$.JSArray_NodeValidator);
-        validator = new A.NodeValidatorBuilder(t1);
-        B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
-        B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
-        B.JSArray_methods.add$1(t1, new A._SvgNodeValidator());
-      }
-      treeSanitizer = new A._ValidatingTreeSanitizer(validator);
+      B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
+      B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
+      B.JSArray_methods.add$1(t1, new A._SvgNodeValidator());
+      treeSanitizer = new A._ValidatingTreeSanitizer(new A.NodeValidatorBuilder(t1));
       html = '<svg version="1.1">' + svg + "</svg>";
       t1 = document;
       t2 = t1.body;
@@ -6825,25 +6759,65 @@
   };
   A.DuoAudioPlayer.prototype = {
     toSection$1(section) {
-      var t1;
-      this._currentSection = section;
+      var t1, _this = this;
+      _this._currentSection = section;
       t1 = section._phraseList;
       if (0 >= t1.length)
         return A.ioore(t1, 0);
-      this._currentPhrase = t1[0];
-      this._audioElement.currentTime = 0;
+      _this._currentPhrase = t1[0];
+      _this._audioElement.currentTime = 0;
+      A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
+    },
+    toPhrase$1(phrase) {
+      var _this = this,
+        t1 = $.ScriptPool__instance;
+      if (t1 == null) {
+        t1 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+        t1._fetchData$0();
+        $.ScriptPool__instance = t1;
+      }
+      _this._currentSection = t1.getSection$1(phrase.sectionNumber);
+      _this._currentPhrase = phrase;
+      _this._audioElement.currentTime = 0;
+      A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
     },
     play$0(_) {
-      var _this = this,
+      var t2, t3, t4, _this = this,
         t1 = _this._audioElement;
       if (_this._nowPlaying) {
         t1.pause();
-        _this._nowPlaying = false;
+        t1 = _this._nowPlaying = false;
       } else {
-        t1.src = "resources/sound_sources/" + _this._currentPhrase.toString$0(0) + ".mp3";
+        t1.src = "resources/sound_sources/" + _this._currentPhrase.phraseNumber + ".mp3";
         t1.currentTime = 0;
         A.promiseToFuture(t1.play(), type$.dynamic);
-        _this._nowPlaying = true;
+        t1 = _this._nowPlaying = true;
+      }
+      t2 = document;
+      t3 = t2.querySelector(".play-button");
+      t3.toString;
+      t4 = J.getInterceptor$x(t3);
+      if (t1)
+        t4.set$innerHtml(t3, '<i class="lni lni-stop"></i>');
+      else
+        t4.set$innerHtml(t3, '<i class="lni lni-play"></i>');
+      t1 = _this._currentPhrase;
+      t3 = t2.querySelector(".sentence-box");
+      t3.toString;
+      J.set$innerHtml$x(t3, t1.engText);
+      t1 = _this._currentPhrase;
+      t3 = _this._nowPlaying;
+      t1 = t1.phraseNumber;
+      t4 = t2.querySelector("#active-select-phrase-" + t1);
+      if (t4 != null) {
+        t4.id = "select-phrase-" + t1;
+        t4.className = "select-phrase lni lni-play";
+      }
+      if (t3) {
+        t2 = t2.querySelector("#select-phrase-" + t1);
+        t2.toString;
+        t2.id = "active-select-phrase-" + t1;
+        t2.className = "select-phrase lni lni-stop";
       }
     }
   };
@@ -6878,16 +6852,8 @@
   };
   A.main_closure0.prototype = {
     call$1($event) {
-      var t1, t2, t3;
       type$.MouseEvent._as($event);
-      t1 = this.audioPlayer;
-      t1.play$0(0);
-      t2 = this.playButton;
-      t3 = J.getInterceptor$x(t2);
-      if (t1._nowPlaying)
-        t3.set$innerHtml(t2, '<i class="lni lni-stop"></i>');
-      else
-        t3.set$innerHtml(t2, '<i class="lni lni-play"></i>');
+      this.audioPlayer.play$0(0);
     },
     $signature: 1
   };
@@ -6896,16 +6862,7 @@
       var t1, t2, t3;
       type$.MouseEvent._as($event);
       t1 = this.audioPlayer;
-      t2 = t1._currentSection;
-      if (t2.sectionNumber === B.JSArray_methods.get$last(t2._phraseList).sectionNumber) {
-        t2 = $.ScriptPool__instance;
-        if (t2 == null) {
-          t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-          t2._fetchData$0();
-          $.ScriptPool__instance = t2;
-        }
-        t1.toSection$1(t2.getSection$1(1));
-      } else {
+      if (t1._currentPhrase.phraseNumber === B.JSArray_methods.get$last(t1._currentSection._phraseList).phraseNumber) {
         t2 = t1._currentSection;
         t3 = $.ScriptPool__instance;
         if (t3 == null) {
@@ -6913,7 +6870,32 @@
           t3._fetchData$0();
           $.ScriptPool__instance = t3;
         }
-        t1.toSection$1(t3.getSection$1(t2.sectionNumber + 1));
+        if (t2.sectionNumber === B.JSArray_methods.get$last(t3._sectionList).sectionNumber) {
+          t2 = $.ScriptPool__instance;
+          if (t2 == null) {
+            t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+            t2._fetchData$0();
+            $.ScriptPool__instance = t2;
+          }
+          t1.toSection$1(t2.getSection$1(1));
+        } else {
+          t2 = t1._currentSection;
+          t3 = $.ScriptPool__instance;
+          if (t3 == null) {
+            t3 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+            t3._fetchData$0();
+            $.ScriptPool__instance = t3;
+          }
+          t1.toSection$1(t3.getSection$1(t2.sectionNumber + 1));
+        }
+      } else {
+        t2 = $.ScriptPool__instance;
+        if (t2 == null) {
+          t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+          t2._fetchData$0();
+          $.ScriptPool__instance = t2;
+        }
+        t1.toPhrase$1(t2.getPhrase$1(t1._currentPhrase.phraseNumber + 1));
       }
       if (t1._nowPlaying)
         t1.play$0(0);
@@ -6959,9 +6941,8 @@
     call$1(selectPhraseButton) {
       var t1, phraseNumber, t2, t3;
       type$.Element._as(selectPhraseButton);
-      t1 = selectPhraseButton.getAttribute("phrase-number");
-      t1.toString;
-      phraseNumber = A.int_parse(t1);
+      t1 = selectPhraseButton.id;
+      phraseNumber = A.int_parse(A.stringReplaceAllUnchecked(t1, "select-phrase-", ""));
       t1 = J.get$onClick$x(selectPhraseButton);
       t2 = t1.$ti;
       t3 = t2._eval$1("~(1)?")._as(new A.main__closure(this.audioPlayer, phraseNumber));
@@ -6972,7 +6953,7 @@
   };
   A.main__closure.prototype = {
     call$1($event) {
-      var t1, t2, t3;
+      var t1, t2;
       type$.MouseEvent._as($event);
       t1 = this.audioPlayer;
       t2 = $.ScriptPool__instance;
@@ -6981,16 +6962,8 @@
         t2._fetchData$0();
         $.ScriptPool__instance = t2;
       }
-      t2 = t2.getPhrase$1(this.phraseNumber);
-      t3 = $.ScriptPool__instance;
-      if (t3 == null) {
-        t3 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-        t3._fetchData$0();
-        $.ScriptPool__instance = t3;
-      }
-      t1._currentSection = t3.getSection$1(t2.sectionNumber);
-      t1._currentPhrase = t2;
-      t1._audioElement.currentTime = 0;
+      t1.toPhrase$1(t2.getPhrase$1(this.phraseNumber));
+      t1.play$0(0);
     },
     $signature: 1
   };
@@ -7149,18 +7122,18 @@
       var t1 = type$.Section._as(section).sectionNumber;
       return '<a class="uk-link-reset" id="select-section-' + t1 + '">' + t1 + "</a>\n";
     },
-    $signature: 10
+    $signature: 9
   };
   A.SectionMenu__generate_closure0.prototype = {
     call$1(section) {
       return A.SectionMenu__sectionPhraseList(type$.Section._as(section));
     },
-    $signature: 10
+    $signature: 9
   };
   A.SectionMenu__sectionPhraseList_closure.prototype = {
     call$1(phrase) {
       type$.Phrase._as(phrase);
-      return '<li>\n    <span class="select-phrase" phrase-number="' + phrase.phraseNumber + '" uk-icon="icon: play; ratio: 1.5"></span>\n    <p>' + phrase.engText + "</p>\n</li>";
+      return '<li>\n    <i class="select-phrase lni lni-play" id="select-phrase-' + phrase.phraseNumber + '"></i>\n    <p>' + phrase.engText + "</p>\n</li>";
     },
     $signature: 29
   };
@@ -7184,8 +7157,8 @@
     _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 3);
     _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 3);
     _static_0(A, "async___startMicrotaskLoop$closure", "_startMicrotaskLoop", 0);
-    _static(A, "html__Html5NodeValidator__standardAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__standardAttributeValidator"], 11, 0);
-    _static(A, "html__Html5NodeValidator__uriAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__uriAttributeValidator"], 11, 0);
+    _static(A, "html__Html5NodeValidator__standardAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__standardAttributeValidator"], 10, 0);
+    _static(A, "html__Html5NodeValidator__uriAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__uriAttributeValidator"], 10, 0);
   })();
   (function inheritance() {
     var _mixin = hunkHelpers.mixin,
@@ -7205,7 +7178,7 @@
     _inherit(A.WhereIterator, A.Iterator);
     _inherit(A.ConstantStringMap, A.ConstantMap);
     _inherit(A.NullError, A.TypeError);
-    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.Element_Element$html_closure, A._EventStreamSubscription_closure, A.NodeValidatorBuilder_allowCustomElement_closure, A.NodeValidatorBuilder_allowsElement_closure, A.NodeValidatorBuilder_allowsAttribute_closure, A._SimpleNodeValidator_closure, A._SimpleNodeValidator_closure0, A._TemplatingNodeValidator_closure, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3, A.main__closure, A.ScriptPool_getSection_closure, A.ScriptPool_getPhrase_closure, A.ScriptPool_getPhrase__closure, A.SectionMenu_setup_closure, A.SectionMenu_setup__closure, A.SectionMenu_setup___closure, A.SectionMenu__generate_closure, A.SectionMenu__generate_closure0, A.SectionMenu__sectionPhraseList_closure]);
+    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.Element_Element$html_closure, A._EventStreamSubscription_closure, A.NodeValidatorBuilder_allowsElement_closure, A.NodeValidatorBuilder_allowsAttribute_closure, A._SimpleNodeValidator_closure, A._SimpleNodeValidator_closure0, A._TemplatingNodeValidator_closure, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3, A.main__closure, A.ScriptPool_getSection_closure, A.ScriptPool_getPhrase_closure, A.ScriptPool_getPhrase__closure, A.SectionMenu_setup_closure, A.SectionMenu_setup__closure, A.SectionMenu_setup___closure, A.SectionMenu__generate_closure, A.SectionMenu__generate_closure0, A.SectionMenu__sectionPhraseList_closure]);
     _inheritMany(A.TearOffClosure, [A.StaticClosure, A.BoundClosure]);
     _inherit(A._AssertionError, A.AssertionError);
     _inherit(A.MapBase, A.MapMixin);
@@ -7237,7 +7210,7 @@
     _inherit(A._EventStream, A.Stream);
     _inherit(A._ElementEventStreamImpl, A._EventStream);
     _inherit(A._EventStreamSubscription, A.StreamSubscription);
-    _inheritMany(A._SimpleNodeValidator, [A._CustomElementNodeValidator, A._TemplatingNodeValidator]);
+    _inherit(A._TemplatingNodeValidator, A._SimpleNodeValidator);
     _inherit(A.ScriptElement0, A.SvgElement);
     _mixin(A._ListBase_Object_ListMixin, A.ListMixin);
     _mixin(A.__SetBase_Object_SetMixin, A.SetMixin);
@@ -7251,12 +7224,12 @@
     typeUniverse: {eC: new Map(), tR: {}, eT: {}, tPV: {}, sEA: []},
     mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List"},
     mangledNames: {},
-    types: ["~()", "~(MouseEvent)", "~(Section)", "~(~())", "Null(@)", "Null()", "String(String)", "bool(NodeValidator)", "bool(String)", "~(@)", "String(Section)", "bool(Element,String,String,_Html5NodeValidator)", "@(@)", "@(@,String)", "@(String)", "Null(~())", "Null(Object,StackTrace)", "_Future<@>(@)", "~(Object?,Object?)", "bool(Node)", "~(Event)", "~(Node,Node?)", "~(Element)", "~(String,Map<String,Map<String,String>>)", "~(String,Map<String,String>)", "int(Section,Section)", "bool(Section)", "~(Phrase)", "int(Phrase,Phrase)", "String(Phrase)"],
+    types: ["~()", "~(MouseEvent)", "~(Section)", "~(~())", "Null(@)", "Null()", "bool(NodeValidator)", "bool(String)", "~(@)", "String(Section)", "bool(Element,String,String,_Html5NodeValidator)", "@(@)", "@(@,String)", "@(String)", "Null(~())", "Null(Object,StackTrace)", "_Future<@>(@)", "~(Object?,Object?)", "bool(Node)", "~(Event)", "String(String)", "~(Node,Node?)", "~(Element)", "~(String,Map<String,Map<String,String>>)", "~(String,Map<String,String>)", "int(Section,Section)", "bool(Section)", "~(Phrase)", "int(Phrase,Phrase)", "String(Phrase)"],
     interceptorsByTag: null,
     leafTags: null,
     arrayRti: Symbol("$ti")
   };
-  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","AElement":"SvgElement","GraphicsElement":"SvgElement","BRElement":"HtmlElement","ShadowRoot":"Node","DocumentFragment":"Node","XmlDocument":"Document","Window":"EventTarget","PointerEvent":"MouseEvent","VideoElement":"MediaElement","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSNull":{"Null":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[],"Pattern":[]},"LateError":{"Error":[]},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"Iterable":["1"]},"ListIterator":{"Iterator":["1"]},"MappedListIterable":{"ListIterable":["2"],"Iterable":["2"],"ListIterable.E":"2","Iterable.E":"2"},"WhereIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereIterator":{"Iterator":["1"]},"ConstantMap":{"Map":["1","2"]},"ConstantStringMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapMixin":["1","2"],"Map":["1","2"],"MapMixin.K":"1","MapMixin.V":"2"},"LinkedHashMapKeyIterable":{"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"JSSyntaxRegExp":{"Pattern":[]},"_MatchImplementation":{"RegExpMatch":[]},"_AllMatchesIterator":{"Iterator":["RegExpMatch"]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_AsyncCompleter":{"_Completer":["1"]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_LinkedHashSet":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"_LinkedHashSetIterator":{"Iterator":["1"]},"ListBase":{"ListMixin":["1"],"List":["1"],"Iterable":["1"]},"MapBase":{"MapMixin":["1","2"],"Map":["1","2"]},"MapMixin":{"Map":["1","2"]},"_SetBase":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"int":{"num":[]},"String":{"Pattern":[]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"Element":{"Node":[],"EventTarget":[]},"MouseEvent":{"Event":[]},"Node":{"EventTarget":[]},"_Html5NodeValidator":{"NodeValidator":[]},"HtmlElement":{"Element":[],"Node":[],"EventTarget":[]},"AnchorElement":{"Element":[],"Node":[],"EventTarget":[]},"AreaElement":{"Element":[],"Node":[],"EventTarget":[]},"AudioElement":{"Element":[],"Node":[],"EventTarget":[]},"BaseElement":{"Element":[],"Node":[],"EventTarget":[]},"BodyElement":{"Element":[],"Node":[],"EventTarget":[]},"CharacterData":{"Node":[],"EventTarget":[]},"Document":{"Node":[],"EventTarget":[]},"_FrozenElementList":{"ListMixin":["1"],"List":["1"],"Iterable":["1"],"ListMixin.E":"1"},"FormElement":{"Element":[],"Node":[],"EventTarget":[]},"HtmlDocument":{"Node":[],"EventTarget":[]},"MediaElement":{"Element":[],"Node":[],"EventTarget":[]},"_ChildNodeListLazy":{"ListMixin":["Node"],"List":["Node"],"Iterable":["Node"],"ListMixin.E":"Node"},"NodeList":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"SelectElement":{"Element":[],"Node":[],"EventTarget":[]},"TableElement":{"Element":[],"Node":[],"EventTarget":[]},"TableRowElement":{"Element":[],"Node":[],"EventTarget":[]},"TableSectionElement":{"Element":[],"Node":[],"EventTarget":[]},"TemplateElement":{"Element":[],"Node":[],"EventTarget":[]},"UIEvent":{"Event":[]},"_Attr":{"Node":[],"EventTarget":[]},"_NamedNodeMap":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"_AttributeMap":{"MapMixin":["String","String"],"Map":["String","String"]},"_ElementAttributeMap":{"MapMixin":["String","String"],"Map":["String","String"],"MapMixin.K":"String","MapMixin.V":"String"},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"NodeValidatorBuilder":{"NodeValidator":[]},"_SimpleNodeValidator":{"NodeValidator":[]},"_CustomElementNodeValidator":{"NodeValidator":[]},"_TemplatingNodeValidator":{"NodeValidator":[]},"_SvgNodeValidator":{"NodeValidator":[]},"FixedSizeListIterator":{"Iterator":["1"]},"_SameOriginUriPolicy":{"UriPolicy":[]},"_ValidatingTreeSanitizer":{"NodeTreeSanitizer":[]},"ScriptElement0":{"SvgElement":[],"Element":[],"Node":[],"EventTarget":[]},"SvgElement":{"Element":[],"Node":[],"EventTarget":[]}}'));
+  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","AElement":"SvgElement","GraphicsElement":"SvgElement","BRElement":"HtmlElement","ShadowRoot":"Node","DocumentFragment":"Node","XmlDocument":"Document","Window":"EventTarget","PointerEvent":"MouseEvent","VideoElement":"MediaElement","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSNull":{"Null":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[],"Pattern":[]},"LateError":{"Error":[]},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"Iterable":["1"]},"ListIterator":{"Iterator":["1"]},"MappedListIterable":{"ListIterable":["2"],"Iterable":["2"],"ListIterable.E":"2","Iterable.E":"2"},"WhereIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereIterator":{"Iterator":["1"]},"ConstantMap":{"Map":["1","2"]},"ConstantStringMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapMixin":["1","2"],"Map":["1","2"],"MapMixin.K":"1","MapMixin.V":"2"},"LinkedHashMapKeyIterable":{"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"JSSyntaxRegExp":{"Pattern":[]},"_MatchImplementation":{"RegExpMatch":[]},"_AllMatchesIterator":{"Iterator":["RegExpMatch"]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_AsyncCompleter":{"_Completer":["1"]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_LinkedHashSet":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"_LinkedHashSetIterator":{"Iterator":["1"]},"ListBase":{"ListMixin":["1"],"List":["1"],"Iterable":["1"]},"MapBase":{"MapMixin":["1","2"],"Map":["1","2"]},"MapMixin":{"Map":["1","2"]},"_SetBase":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"int":{"num":[]},"String":{"Pattern":[]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"Element":{"Node":[],"EventTarget":[]},"MouseEvent":{"Event":[]},"Node":{"EventTarget":[]},"_Html5NodeValidator":{"NodeValidator":[]},"HtmlElement":{"Element":[],"Node":[],"EventTarget":[]},"AnchorElement":{"Element":[],"Node":[],"EventTarget":[]},"AreaElement":{"Element":[],"Node":[],"EventTarget":[]},"AudioElement":{"Element":[],"Node":[],"EventTarget":[]},"BaseElement":{"Element":[],"Node":[],"EventTarget":[]},"BodyElement":{"Element":[],"Node":[],"EventTarget":[]},"CharacterData":{"Node":[],"EventTarget":[]},"Document":{"Node":[],"EventTarget":[]},"_FrozenElementList":{"ListMixin":["1"],"List":["1"],"Iterable":["1"],"ListMixin.E":"1"},"FormElement":{"Element":[],"Node":[],"EventTarget":[]},"HtmlDocument":{"Node":[],"EventTarget":[]},"MediaElement":{"Element":[],"Node":[],"EventTarget":[]},"_ChildNodeListLazy":{"ListMixin":["Node"],"List":["Node"],"Iterable":["Node"],"ListMixin.E":"Node"},"NodeList":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"SelectElement":{"Element":[],"Node":[],"EventTarget":[]},"TableElement":{"Element":[],"Node":[],"EventTarget":[]},"TableRowElement":{"Element":[],"Node":[],"EventTarget":[]},"TableSectionElement":{"Element":[],"Node":[],"EventTarget":[]},"TemplateElement":{"Element":[],"Node":[],"EventTarget":[]},"UIEvent":{"Event":[]},"_Attr":{"Node":[],"EventTarget":[]},"_NamedNodeMap":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"_AttributeMap":{"MapMixin":["String","String"],"Map":["String","String"]},"_ElementAttributeMap":{"MapMixin":["String","String"],"Map":["String","String"],"MapMixin.K":"String","MapMixin.V":"String"},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"NodeValidatorBuilder":{"NodeValidator":[]},"_SimpleNodeValidator":{"NodeValidator":[]},"_TemplatingNodeValidator":{"NodeValidator":[]},"_SvgNodeValidator":{"NodeValidator":[]},"FixedSizeListIterator":{"Iterator":["1"]},"_SameOriginUriPolicy":{"UriPolicy":[]},"_ValidatingTreeSanitizer":{"NodeTreeSanitizer":[]},"ScriptElement0":{"SvgElement":[],"Element":[],"Node":[],"EventTarget":[]},"SvgElement":{"Element":[],"Node":[],"EventTarget":[]}}'));
   A._Universe_addErasedTypes(init.typeUniverse, JSON.parse('{"EfficientLengthIterable":1,"StreamSubscription":1,"ListBase":1,"MapBase":2,"_SetBase":1,"_ListBase_Object_ListMixin":1,"__SetBase_Object_SetMixin":1}'));
   var string$ = {
     Error_: "Error handler must accept one Object or one Object and a StackTrace as arguments, and return a value of the returned future's type"
@@ -7323,7 +7296,6 @@
       legacy_Never: findType("0&*"),
       legacy_Object: findType("Object*"),
       nullable_Future_Null: findType("Future<Null>?"),
-      nullable_Iterable_String: findType("Iterable<String>?"),
       nullable_Object: findType("Object?"),
       nullable__FutureListener_dynamic_dynamic: findType("_FutureListener<@,@>?"),
       nullable__LinkedHashSetCell: findType("_LinkedHashSetCell?"),
