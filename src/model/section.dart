@@ -12,9 +12,7 @@ class Section {
     return _phraseList[index];
   }
 
-  List<Phrase> getAllPhrase() {
-    return _phraseList;
-  }
+  List<Phrase> get phraseList => _phraseList;
 
   bool isExist(int phraseIndex) {
     return 0 <= phraseIndex && phraseIndex <= (_phraseList.length - 1);

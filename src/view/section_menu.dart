@@ -7,7 +7,7 @@ class SectionMenu {
   static void setup() {
     var html = _generate(ScriptPool().getSectionList());
     var _htmlValidator = NodeValidatorBuilder.common()
-      ..allowElement('span', attributes: ['uk-icon']);
+      ..allowElement('span', attributes: ['uk-icon','phrase-number']);
 
     //ignore: unsafe_html
     querySelector('.section-menu-container')!.setInnerHtml(html, validator: _htmlValidator);
@@ -46,9 +46,9 @@ class SectionMenu {
   }
 
   static String _sectionPhraseList(Section section) {
-    var phraseListAsHtml = section.getAllPhrase().map((phrase) => '''
+    var phraseListAsHtml = section.phraseList.map((phrase) => '''
 <li>
-    <span uk-icon="icon: play; ratio: 1.5"></span>
+    <span class="select-phrase" phrase-number="${phrase.phraseNumber}" uk-icon="icon: play; ratio: 1.5"></span>
     <p>${phrase.engText}</p>
 </li>''').join();
 

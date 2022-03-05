@@ -1,10 +1,15 @@
 import 'dart:html';
 
+import 'duo_audio_player.dart';
+import 'pool/script_pool.dart';
 import 'view/section_menu.dart';
 
 void main() {
+  var audioPlayer = DuoAudioPlayer();
+
   SectionMenu.setup();
 
+  //section-menuの開閉
   var openSectionMenuButton = querySelector('.open-section-menu')!;
   openSectionMenuButton.onClick.listen((event) {
     var sectionMenu = querySelector('.section-menu')!;
@@ -19,5 +24,38 @@ void main() {
       querySelector('.section-menu-container')!.style.height = '0';
       querySelector('.content-box')!.style.height = '90%';
     }
+  });
+
+  //audio関係
+  //再生、停止
+  var playButton = querySelector('.play-button')!;
+  playButton.onClick.listen((event) {
+    audioPlayer.play();
+    if (audioPlayer.nowPlaying) {
+      playButton.innerHtml = '<i class="lni lni-stop"></i>';
+    } else {
+      playButton.innerHtml = '<i class="lni lni-play"></i>';
+    }
+  });
+
+  //next
+  var nextButton = querySelector('.next-button')!;
+  nextButton.onClick.listen((event) {
+    audioPlayer.skipNext();
+  });
+
+  //previous
+  var previousButton = querySelector('.previous-button')!;
+  previousButton.onClick.listen((event) {
+    audioPlayer.skipPrevious();
+  });
+
+  //phraseの選択
+  var selectPhraseButtons = querySelectorAll('.select-phrase');
+  selectPhraseButtons.forEach((selectPhraseButton) {
+    var phraseNumber = int.parse(selectPhraseButton.getAttribute('phrase-number')!);
+    selectPhraseButton.onClick.listen((event) {
+      audioPlayer.toPhrase(ScriptPool().getPhrase(phraseNumber));
+    });
   });
 }

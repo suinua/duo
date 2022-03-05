@@ -39,6 +39,17 @@ class ScriptPool {
     section.sectionNumber == sectionNumber);
   }
 
+  Phrase getPhrase(int phraseNumber) {
+    Phrase? result;
+    _sectionList.forEach((section) {
+      section.phraseList.forEach((phrase) {
+        if (phrase.phraseNumber == phraseNumber) result = phrase;
+      });
+    });
+
+    return result!;
+  }
+
   List<Section> getSectionList() {
     return _sectionList;
   }

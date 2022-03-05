@@ -40,17 +40,23 @@ html, body {
 }
 
 .previous-button {
+  margin-top: 1%;
   display: inline-block;
+  font-size: 130%;
 }
 
 .play-button {
+  margin-top: 1%;
   display: inline-block;
   margin-right: 10%;
   margin-left: 10%;
+  font-size: 130%;
 }
 
 .next-button {
+  margin-top: 1%;
   display: inline-block;
+  font-size: 130%;
 }
 
 .open-section-menu {
