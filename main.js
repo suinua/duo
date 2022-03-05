@@ -3987,10 +3987,12 @@
       this.audioPlayer = t0;
       this.phraseNumber = t1;
     },
-    Phrase: function Phrase(t0, t1, t2) {
-      this.sectionNumber = t0;
-      this.phraseNumber = t1;
-      this.engText = t2;
+    Phrase: function Phrase(t0, t1, t2, t3) {
+      var _ = this;
+      _.sectionNumber = t0;
+      _.phraseNumber = t1;
+      _.jpText = t2;
+      _.engText = t3;
     },
     ScriptPool: function ScriptPool(t0) {
       this._sectionList = t0;
@@ -4085,6 +4087,15 @@
       t1 = t1.querySelector(".phrase-number");
       t1.toString;
       J.set$innerHtml$x(t1, "No : " + phrase.phraseNumber);
+    },
+    ViewService_updateSentenceBox(phrase) {
+      var t1 = document,
+        t2 = t1.querySelector(".eng-sentence");
+      t2.toString;
+      J.set$innerHtml$x(t2, "<span>English</span>" + phrase.engText);
+      t1 = t1.querySelector(".jp-sentence");
+      t1.toString;
+      J.set$innerHtml$x(t1, "<span>Japanese</span>" + phrase.jpText);
     },
     ViewService_updateSelectPhraseButton(currentPhrase, nowPlaying) {
       var t1 = document,
@@ -6995,6 +7006,7 @@
       if (_this._nowPlaying)
         _this.stop$0(0);
       A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
+      A.ViewService_updateSentenceBox(_this._currentPhrase);
     },
     toPhrase$2$continuePlaying(phrase, continuePlaying) {
       var _this = this,
@@ -7010,6 +7022,7 @@
       if (continuePlaying)
         _this.play$0(0);
       A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
+      A.ViewService_updateSentenceBox(_this._currentPhrase);
     },
     toPhrase$1(phrase) {
       return this.toPhrase$2$continuePlaying(phrase, true);
@@ -7022,17 +7035,13 @@
       A.ViewService_updateSelectPhraseButton(_this._currentPhrase, _this._nowPlaying);
     },
     play$0(_) {
-      var t2, _this = this,
+      var _this = this,
         t1 = _this._audioElement;
       t1.src = "resources/sound_sources/" + _this._currentPhrase.phraseNumber + ".mp3";
       t1.currentTime = 0;
       A.promiseToFuture(t1.play(), type$.dynamic);
       _this._nowPlaying = true;
       A.ViewService_updatePlayButton(true);
-      t1 = _this._currentPhrase;
-      t2 = document.querySelector(".sentence-box");
-      t2.toString;
-      J.set$innerHtml$x(t2, t1.engText);
       A.ViewService_updateSelectPhraseButton(_this._currentPhrase, _this._nowPlaying);
     },
     skipNext$0() {
@@ -7203,7 +7212,7 @@
           t2._fetchData$0();
           $.ScriptPool__instance = t2;
         }
-        t1.toPhrase$2$continuePlaying(t2.getPhrase$1(t1._currentPhrase.phraseNumber + 1), t1._nowPlaying);
+        t1.toPhrase$2$continuePlaying(t2.getPhrase$1(t1._currentPhrase.phraseNumber - 1), t1._nowPlaying);
       }
     },
     $signature: 1
@@ -7280,18 +7289,18 @@
   };
   A.ScriptPool__fetchData__closure.prototype = {
     call$2(phraseNumberAsStr, phrase) {
-      var phraseNumber, t1, t2,
+      var phraseNumber, t1, jp, t2,
         _s9_ = "^[0-9]* *";
       A._asString(phraseNumberAsStr);
       type$.Map_String_String._as(phrase);
       phraseNumber = A.int_parse(phraseNumberAsStr);
       t1 = phrase.$index(0, "jp");
       t1.toString;
-      J.replaceFirst$2$s(t1, A.RegExp_RegExp(_s9_), "");
+      jp = J.replaceFirst$2$s(t1, A.RegExp_RegExp(_s9_), "");
       t1 = phrase.$index(0, "en");
       t1.toString;
       t2 = this.section;
-      B.JSArray_methods.add$1(t2._phraseList, new A.Phrase(this.sectionNumber, phraseNumber, J.replaceFirst$2$s(t1, A.RegExp_RegExp(_s9_), "")));
+      B.JSArray_methods.add$1(t2._phraseList, new A.Phrase(this.sectionNumber, phraseNumber, jp, J.replaceFirst$2$s(t1, A.RegExp_RegExp(_s9_), "")));
       t2._sortPhraseList$0();
     },
     $signature: 24
