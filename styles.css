@@ -1,0 +1,157 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+.nav-bar {
+  position: fixed;
+  top: 0;
+  height: 5%;
+  width: 100%;
+  display: block;
+  background: white;
+  border-bottom: solid 1px #EDF2F7;
+  padding: 10px;
+}
+
+.section-number {
+  display: inline-block;
+}
+
+.sentence-number {
+  display: inline-block;
+}
+
+.bottom-nav-bar {
+  position: fixed;
+  bottom: 0;
+  height:5%;
+  width: 100%;
+  display: block;
+  background: white;
+  border-top: solid 1px #EDF2F7;
+  padding: 10px;
+  text-align: center;
+}
+
+.previous-button {
+  margin-top: 1%;
+  display: inline-block;
+  font-size: 130%;
+}
+
+.play-button {
+  margin-top: 1%;
+  display: inline-block;
+  margin-right: 10%;
+  margin-left: 10%;
+  font-size: 130%;
+}
+
+.next-button {
+  margin-top: 1%;
+  display: inline-block;
+  font-size: 130%;
+}
+
+.open-section-menu {
+  position: fixed;
+  display: block;
+  bottom: 10px;
+  right: 0;
+}
+
+.content-box {
+  position: relative;
+  display: table;
+  height: 50%;
+  width: 100%;
+}
+
+.sentence-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  -webkit-transform: translateY(-50%) translateX(-50%);
+}
+
+.section-menu-container {
+  height: 40%;
+  width: 100%;
+}
+
+.section-menu {
+  height: 100%;
+  width: 100%;
+  border-top: solid 2px #EDF2F7;
+  margin:0;
+  padding-left: 0;
+}
+
+.section-items {
+  margin: 0;
+  overflow-y: scroll;
+  display: none;
+  height: 0;
+}
+
+.section-items::-webkit-scrollbar {
+  width: 4px;
+  height: 8px;
+  background-color: #cccccc;
+}
+
+.section-items::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background: #9a9a9a;
+}
+
+.section-items span {
+  display: inline;
+}
+
+.section-items p {
+  display: inline;
+  text-align: center;
+}
+
+.section-number-list {
+  overflow-x: scroll;
+  height: 20px;
+  display: block;
+  background: white;
+  width: 100%;
+  border-bottom: solid 2px #EDF2F7;
+}
+
+.section-number-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.section-number-list::-webkit-scrollbar-thumb {}
+
+
+.section-number-list a {
+  margin-left: 50px;
+}
+
+.progress-bar-wrap {
+  height: 8px;
+  width: 100%;
+  background: gray;
+  border-radius: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 10%;
+  background: black;
+  border-radius: 10px;
+}
