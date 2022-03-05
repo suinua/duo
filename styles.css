@@ -142,16 +142,17 @@ html, body {
   margin-left: 50px;
 }
 
-.progress-bar-wrap {
+.seekbar {
   height: 8px;
   width: 100%;
   background: gray;
   border-radius: 10px;
 }
 
-.progress-bar {
+.seekbar-gauge {
   height: 100%;
-  width: 10%;
+  width: 0;
   background: black;
   border-radius: 10px;
+  transition-duration: 500ms;
 }

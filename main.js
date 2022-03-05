@@ -253,6 +253,16 @@
   }
   var A = {JS_CONST: function JS_CONST() {
     },
+    SystemHash_combine(hash, value) {
+      hash = hash + value & 536870911;
+      hash = hash + ((hash & 524287) << 10) & 536870911;
+      return hash ^ hash >>> 6;
+    },
+    SystemHash_finish(hash) {
+      hash = hash + ((hash & 67108863) << 3) & 536870911;
+      hash ^= hash >>> 11;
+      return hash + ((hash & 16383) << 15) & 536870911;
+    },
     checkNotNullable(value, $name, $T) {
       return value;
     },
@@ -510,6 +520,8 @@
     },
     LateError: function LateError(t0) {
       this._message = t0;
+    },
+    SentinelValue: function SentinelValue() {
     },
     EfficientLengthIterable: function EfficientLengthIterable() {
     },
@@ -1253,26 +1265,11 @@
       return string;
     },
     stringReplaceAllUnchecked(receiver, pattern, replacement) {
-      var t1 = A.stringReplaceAllUncheckedString(receiver, pattern, replacement);
+      var t1,
+        nativeRegexp = pattern.get$_nativeGlobalVersion();
+      nativeRegexp.lastIndex = 0;
+      t1 = receiver.replace(nativeRegexp, A.escapeReplacement(replacement));
       return t1;
-    },
-    stringReplaceAllUncheckedString(receiver, pattern, replacement) {
-      var $length, t1, i, index;
-      if (pattern === "") {
-        if (receiver === "")
-          return replacement;
-        $length = receiver.length;
-        t1 = "" + replacement;
-        for (i = 0; i < $length; ++i)
-          t1 = t1 + receiver[i] + replacement;
-        return t1.charCodeAt(0) == 0 ? t1 : t1;
-      }
-      index = receiver.indexOf(pattern, 0);
-      if (index < 0)
-        return receiver;
-      if (receiver.length < 500 || replacement.indexOf("$", 0) >= 0)
-        return receiver.split(pattern).join(replacement);
-      return receiver.replace(new RegExp(A.quoteStringForRegExp(pattern), "g"), A.escapeReplacement(replacement));
     },
     stringReplaceFirstUnchecked(receiver, pattern, replacement, startIndex) {
       return startIndex === 0 ? receiver.replace(pattern._nativeRegExp, A.escapeReplacement(replacement)) : A.stringReplaceFirstRE(receiver, pattern, replacement, startIndex);
@@ -1592,6 +1589,22 @@
         return rti;
       }
       return type;
+    },
+    createRuntimeType(rti) {
+      var recipe, starErasedRecipe, starErasedRti,
+        type = rti._cachedRuntimeType;
+      if (type != null)
+        return type;
+      recipe = rti._canonicalRecipe;
+      starErasedRecipe = recipe.replace(/\*/g, "");
+      if (starErasedRecipe === recipe)
+        return rti._cachedRuntimeType = new A._Type(rti);
+      starErasedRti = A._Universe_eval(init.typeUniverse, starErasedRecipe, true);
+      type = starErasedRti._cachedRuntimeType;
+      return rti._cachedRuntimeType = type == null ? starErasedRti._cachedRuntimeType = new A._Type(starErasedRti) : type;
+    },
+    typeLiteral(recipe) {
+      return A.createRuntimeType(A._Universe_eval(init.typeUniverse, recipe, false));
     },
     _installSpecializedIsTest(object) {
       var t1, unstarred, isFn, $name, testRti = this;
@@ -2829,6 +2842,9 @@
     _FunctionParameters: function _FunctionParameters() {
       this._named = this._optionalPositional = this._requiredPositional = null;
     },
+    _Type: function _Type(t0) {
+      this._rti = t0;
+    },
     _Error: function _Error() {
     },
     _TypeError: function _TypeError(t0) {
@@ -3527,6 +3543,15 @@
     FormatException$(message, source) {
       return new A.FormatException(message, source);
     },
+    Object_hash(object1, object2, object3, object4) {
+      var t2,
+        t1 = B.JSNumber_methods.get$hashCode(object1);
+      object2 = B.JSNumber_methods.get$hashCode(object2);
+      object3 = B.JSNumber_methods.get$hashCode(object3);
+      object4 = B.JSNumber_methods.get$hashCode(object4);
+      t2 = $.$get$_hashSeed();
+      return A.SystemHash_finish(A.SystemHash_combine(A.SystemHash_combine(A.SystemHash_combine(A.SystemHash_combine(t2, t1), object2), object3), object4));
+    },
     Error: function Error() {
     },
     AssertionError: function AssertionError(t0) {
@@ -3711,6 +3736,8 @@
     },
     DomImplementation: function DomImplementation() {
     },
+    DomRectReadOnly: function DomRectReadOnly() {
+    },
     _FrozenElementList: function _FrozenElementList(t0, t1) {
       this._nodeList = t0;
       this.$ti = t1;
@@ -3754,6 +3781,8 @@
     },
     _Attr: function _Attr() {
     },
+    _DomRect: function _DomRect() {
+    },
     _NamedNodeMap: function _NamedNodeMap() {
     },
     _AttributeMap: function _AttributeMap() {
@@ -3761,8 +3790,9 @@
     _ElementAttributeMap: function _ElementAttributeMap(t0) {
       this._html$_element = t0;
     },
-    EventStreamProvider: function EventStreamProvider(t0) {
-      this.$ti = t0;
+    EventStreamProvider: function EventStreamProvider(t0, t1) {
+      this._eventType = t0;
+      this.$ti = t1;
     },
     _EventStream: function _EventStream() {
     },
@@ -3867,15 +3897,8 @@
     },
     SvgElement: function SvgElement() {
     },
-    DuoAudioPlayer: function DuoAudioPlayer(t0, t1, t2) {
-      var _ = this;
-      _._currentSection = t0;
-      _._currentPhrase = t1;
-      _._nowPlaying = false;
-      _._audioElement = t2;
-    },
-    main() {
-      var t3, audioPlayer, t4, selectPhraseButtons,
+    DuoAudioPlayer$() {
+      var t3,
         t1 = A.AudioElement_AudioElement$_(null),
         t2 = $.ScriptPool__instance;
       if (t2 == null) {
@@ -3893,31 +3916,54 @@
       t3 = t3.getSection$1(1)._phraseList;
       if (0 >= t3.length)
         return A.ioore(t3, 0);
-      audioPlayer = new A.DuoAudioPlayer(t2, t3[0], t1);
+      t1 = new A.DuoAudioPlayer(t2, t3[0], t1);
+      t1.DuoAudioPlayer$0();
+      return t1;
+    },
+    DuoAudioPlayer: function DuoAudioPlayer(t0, t1, t2) {
+      var _ = this;
+      _._currentSection = t0;
+      _._currentPhrase = t1;
+      _._nowPlaying = false;
+      _._audioElement = t2;
+    },
+    DuoAudioPlayer_closure: function DuoAudioPlayer_closure(t0) {
+      this.$this = t0;
+    },
+    DuoAudioPlayer_closure0: function DuoAudioPlayer_closure0(t0) {
+      this.$this = t0;
+    },
+    DuoAudioPlayer_closure1: function DuoAudioPlayer_closure1(t0, t1) {
+      this.$this = t0;
+      this.seekbar = t1;
+    },
+    main() {
+      var t1, t2, t3, t4, selectPhraseButtons,
+        audioPlayer = A.DuoAudioPlayer$();
       A.SectionMenu_setup();
       t1 = document;
-      t3 = t1.querySelector(".open-section-menu");
-      t3.toString;
-      t3 = J.get$onClick$x(t3);
-      t2 = t3.$ti;
-      t4 = t2._eval$1("~(1)?")._as(new A.main_closure());
-      type$.nullable_void_Function._as(null);
-      A._EventStreamSubscription$(t3._target, t3._eventType, t4, false, t2._precomputed1);
-      t2 = t1.querySelector(".play-button");
+      t2 = t1.querySelector(".open-section-menu");
       t2.toString;
       t2 = J.get$onClick$x(t2);
-      t4 = t2.$ti;
-      A._EventStreamSubscription$(t2._target, t2._eventType, t4._eval$1("~(1)?")._as(new A.main_closure0(audioPlayer)), false, t4._precomputed1);
+      t3 = t2.$ti;
+      t4 = t3._eval$1("~(1)?")._as(new A.main_closure());
+      type$.nullable_void_Function._as(null);
+      A._EventStreamSubscription$(t2._target, t2._eventType, t4, false, t3._precomputed1);
+      t3 = t1.querySelector(".play-button");
+      t3.toString;
+      t3 = J.get$onClick$x(t3);
+      t4 = t3.$ti;
+      A._EventStreamSubscription$(t3._target, t3._eventType, t4._eval$1("~(1)?")._as(new A.main_closure0(audioPlayer)), false, t4._precomputed1);
       t4 = t1.querySelector(".next-button");
       t4.toString;
       t4 = J.get$onClick$x(t4);
-      t2 = t4.$ti;
-      A._EventStreamSubscription$(t4._target, t4._eventType, t2._eval$1("~(1)?")._as(new A.main_closure1(audioPlayer)), false, t2._precomputed1);
-      t2 = t1.querySelector(".previous-button");
-      t2.toString;
-      t2 = J.get$onClick$x(t2);
-      t4 = t2.$ti;
-      A._EventStreamSubscription$(t2._target, t2._eventType, t4._eval$1("~(1)?")._as(new A.main_closure2(audioPlayer)), false, t4._precomputed1);
+      t3 = t4.$ti;
+      A._EventStreamSubscription$(t4._target, t4._eventType, t3._eval$1("~(1)?")._as(new A.main_closure1(audioPlayer)), false, t3._precomputed1);
+      t3 = t1.querySelector(".previous-button");
+      t3.toString;
+      t3 = J.get$onClick$x(t3);
+      t4 = t3.$ti;
+      A._EventStreamSubscription$(t3._target, t3._eventType, t4._eval$1("~(1)?")._as(new A.main_closure2(audioPlayer)), false, t4._precomputed1);
       t4 = type$.Element;
       A.checkTypeBound(t4, t4, "T", "querySelectorAll");
       selectPhraseButtons = new A._FrozenElementList(t1.querySelectorAll(".select-phrase"), type$._FrozenElementList_Element);
@@ -4039,6 +4085,16 @@
       t1 = t1.querySelector(".phrase-number");
       t1.toString;
       J.set$innerHtml$x(t1, "No : " + phrase.phraseNumber);
+    },
+    ViewService_updatePlayButton(nowPlaying) {
+      var t2,
+        t1 = document.querySelector(".play-button");
+      t1.toString;
+      t2 = J.getInterceptor$x(t1);
+      if (nowPlaying)
+        t2.set$innerHtml(t1, '<i class="lni lni-stop"></i>');
+      else
+        t2.set$innerHtml(t1, '<i class="lni lni-play"></i>');
     }
   },
   J = {
@@ -4478,6 +4534,14 @@
     get$isNegative(receiver) {
       return receiver === 0 ? 1 / receiver < 0 : receiver < 0;
     },
+    round$0(receiver) {
+      if (receiver > 0) {
+        if (receiver !== 1 / 0)
+          return Math.round(receiver);
+      } else if (receiver > -1 / 0)
+        return 0 - Math.round(0 - receiver);
+      throw A.wrapException(A.UnsupportedError$("" + receiver + ".round()"));
+    },
     toString$0(receiver) {
       if (receiver === 0 && 1 / receiver < 0)
         return "-0.0";
@@ -4578,6 +4642,7 @@
       return t1;
     }
   };
+  A.SentinelValue.prototype = {};
   A.EfficientLengthIterable.prototype = {};
   A.ListIterable.prototype = {
     get$iterator(_) {
@@ -4994,19 +5059,19 @@
     call$1(o) {
       return this.getTag(o);
     },
-    $signature: 11
+    $signature: 12
   };
   A.initHooks_closure0.prototype = {
     call$2(o, tag) {
       return this.getUnknownTag(o, tag);
     },
-    $signature: 12
+    $signature: 13
   };
   A.initHooks_closure1.prototype = {
     call$1(tag) {
       return this.prototypeForTag(A._asString(tag));
     },
-    $signature: 13
+    $signature: 14
   };
   A.JSSyntaxRegExp.prototype = {
     toString$0(_) {
@@ -5090,6 +5155,11 @@
     }
   };
   A._FunctionParameters.prototype = {};
+  A._Type.prototype = {
+    toString$0(_) {
+      return A._rtiToString(this._rti, null);
+    }
+  };
   A._Error.prototype = {
     toString$0(_) {
       return this.__rti$_message;
@@ -5103,7 +5173,7 @@
       t1.storedCallback = null;
       f.call$0();
     },
-    $signature: 4
+    $signature: 5
   };
   A._AsyncRun__initializeScheduleImmediate_closure.prototype = {
     call$1(callback) {
@@ -5113,19 +5183,19 @@
       t2 = this.span;
       t1.firstChild ? t1.removeChild(t2) : t1.appendChild(t2);
     },
-    $signature: 14
+    $signature: 15
   };
   A._AsyncRun__scheduleImmediateJsOverride_internalCallback.prototype = {
     call$0() {
       this.callback.call$0();
     },
-    $signature: 5
+    $signature: 6
   };
   A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback.prototype = {
     call$0() {
       this.callback.call$0();
     },
-    $signature: 5
+    $signature: 6
   };
   A._TimerImpl.prototype = {
     _TimerImpl$2(milliseconds, callback) {
@@ -5368,13 +5438,13 @@
         t1._completeError$2(error, stackTrace);
       }
     },
-    $signature: 4
+    $signature: 5
   };
   A._Future__chainForeignFuture_closure0.prototype = {
     call$2(error, stackTrace) {
       this.$this._completeError$2(type$.Object._as(error), type$.StackTrace._as(stackTrace));
     },
-    $signature: 15
+    $signature: 16
   };
   A._Future__chainForeignFuture_closure1.prototype = {
     call$0() {
@@ -5439,7 +5509,7 @@
     call$1(_) {
       return this.originalSource;
     },
-    $signature: 16
+    $signature: 17
   };
   A._Future__propagateToListeners_handleValueCallback.prototype = {
     call$0() {
@@ -5756,7 +5826,7 @@
       t1._contents = t2 + ": ";
       t1._contents += A.S(v);
     },
-    $signature: 17
+    $signature: 18
   };
   A.MapMixin.prototype = {
     forEach$1(_, action) {
@@ -6015,6 +6085,72 @@
       return receiver.createHTMLDocument(title);
     }
   };
+  A.DomRectReadOnly.prototype = {
+    toString$0(receiver) {
+      var t2,
+        t1 = receiver.left;
+      t1.toString;
+      t1 = "Rectangle (" + A.S(t1) + ", ";
+      t2 = receiver.top;
+      t2.toString;
+      t2 = t1 + A.S(t2) + ") ";
+      t1 = receiver.width;
+      t1.toString;
+      t1 = t2 + A.S(t1) + " x ";
+      t2 = receiver.height;
+      t2.toString;
+      return t1 + A.S(t2);
+    },
+    $eq(receiver, other) {
+      var t1, t2;
+      if (other == null)
+        return false;
+      if (type$.Rectangle_num._is(other)) {
+        t1 = receiver.left;
+        t1.toString;
+        t2 = other.left;
+        t2.toString;
+        if (t1 === t2) {
+          t1 = receiver.top;
+          t1.toString;
+          t2 = other.top;
+          t2.toString;
+          if (t1 === t2) {
+            t1 = receiver.width;
+            t1.toString;
+            t2 = other.width;
+            t2.toString;
+            if (t1 === t2) {
+              t1 = receiver.height;
+              t1.toString;
+              t2 = other.height;
+              t2.toString;
+              t2 = t1 === t2;
+              t1 = t2;
+            } else
+              t1 = false;
+          } else
+            t1 = false;
+        } else
+          t1 = false;
+      } else
+        t1 = false;
+      return t1;
+    },
+    get$hashCode(receiver) {
+      var t2, t3, t4,
+        t1 = receiver.left;
+      t1.toString;
+      t2 = receiver.top;
+      t2.toString;
+      t3 = receiver.width;
+      t3.toString;
+      t4 = receiver.height;
+      t4.toString;
+      return A.Object_hash(t1, t2, t3, t4);
+    },
+    $isRectangle: 1
+  };
   A._FrozenElementList.prototype = {
     get$length(_) {
       return this._nodeList.length;
@@ -6130,7 +6266,7 @@
     call$1(e) {
       return type$.Element._is(type$.Node._as(e));
     },
-    $signature: 18
+    $signature: 19
   };
   A.Event.prototype = {$isEvent: 1};
   A.EventTarget.prototype = {
@@ -6302,6 +6438,71 @@
   };
   A.UIEvent.prototype = {};
   A._Attr.prototype = {$is_Attr: 1};
+  A._DomRect.prototype = {
+    toString$0(receiver) {
+      var t2,
+        t1 = receiver.left;
+      t1.toString;
+      t1 = "Rectangle (" + A.S(t1) + ", ";
+      t2 = receiver.top;
+      t2.toString;
+      t2 = t1 + A.S(t2) + ") ";
+      t1 = receiver.width;
+      t1.toString;
+      t1 = t2 + A.S(t1) + " x ";
+      t2 = receiver.height;
+      t2.toString;
+      return t1 + A.S(t2);
+    },
+    $eq(receiver, other) {
+      var t1, t2;
+      if (other == null)
+        return false;
+      if (type$.Rectangle_num._is(other)) {
+        t1 = receiver.left;
+        t1.toString;
+        t2 = other.left;
+        t2.toString;
+        if (t1 === t2) {
+          t1 = receiver.top;
+          t1.toString;
+          t2 = other.top;
+          t2.toString;
+          if (t1 === t2) {
+            t1 = receiver.width;
+            t1.toString;
+            t2 = other.width;
+            t2.toString;
+            if (t1 === t2) {
+              t1 = receiver.height;
+              t1.toString;
+              t2 = other.height;
+              t2.toString;
+              t2 = t1 === t2;
+              t1 = t2;
+            } else
+              t1 = false;
+          } else
+            t1 = false;
+        } else
+          t1 = false;
+      } else
+        t1 = false;
+      return t1;
+    },
+    get$hashCode(receiver) {
+      var t2, t3, t4,
+        t1 = receiver.left;
+      t1.toString;
+      t2 = receiver.top;
+      t2.toString;
+      t3 = receiver.width;
+      t3.toString;
+      t4 = receiver.height;
+      t4.toString;
+      return A.Object_hash(t1, t2, t3, t4);
+    }
+  };
   A._NamedNodeMap.prototype = {
     get$length(receiver) {
       return receiver.length;
@@ -6367,7 +6568,7 @@
     call$1(e) {
       return this.onData.call$1(type$.Event._as(e));
     },
-    $signature: 19
+    $signature: 2
   };
   A._Html5NodeValidator.prototype = {
     _Html5NodeValidator$1$uriPolicy(uriPolicy) {
@@ -6410,13 +6611,13 @@
     call$1(v) {
       return type$.NodeValidator._as(v).allowsElement$1(this.element);
     },
-    $signature: 6
+    $signature: 7
   };
   A.NodeValidatorBuilder_allowsAttribute_closure.prototype = {
     call$1(v) {
       return type$.NodeValidator._as(v).allowsAttribute$3(this.element, this.attributeName, this.value);
     },
-    $signature: 6
+    $signature: 7
   };
   A._SimpleNodeValidator.prototype = {
     _SimpleNodeValidator$4$allowedAttributes$allowedElements$allowedUriAttributes(uriPolicy, allowedAttributes, allowedElements, allowedUriAttributes) {
@@ -6459,13 +6660,13 @@
     call$1(x) {
       return !B.JSArray_methods.contains$1(B.List_yrN, A._asString(x));
     },
-    $signature: 7
+    $signature: 8
   };
   A._SimpleNodeValidator_closure0.prototype = {
     call$1(x) {
       return B.JSArray_methods.contains$1(B.List_yrN, A._asString(x));
     },
-    $signature: 7
+    $signature: 8
   };
   A._TemplatingNodeValidator.prototype = {
     allowsAttribute$3(element, attributeName, value) {
@@ -6718,7 +6919,7 @@
       t1._asyncComplete$1(t2._eval$1("1/")._as(r));
       return null;
     },
-    $signature: 8
+    $signature: 9
   };
   A.promiseToFuture_closure0.prototype = {
     call$1(e) {
@@ -6726,7 +6927,7 @@
         return this.completer.completeError$1(new A.NullRejectionException(e === undefined));
       return this.completer.completeError$1(e);
     },
-    $signature: 8
+    $signature: 9
   };
   A.ScriptElement0.prototype = {$isScriptElement0: 1};
   A.SvgElement.prototype = {
@@ -6758,6 +6959,23 @@
     $isSvgElement: 1
   };
   A.DuoAudioPlayer.prototype = {
+    DuoAudioPlayer$0() {
+      var seekbar, _this = this,
+        t1 = _this._audioElement,
+        t2 = type$._ElementEventStreamImpl_Event,
+        t3 = t2._eval$1("~(1)?"),
+        t4 = t3._as(new A.DuoAudioPlayer_closure(_this));
+      type$.nullable_void_Function._as(null);
+      t2 = t2._precomputed1;
+      A._EventStreamSubscription$(t1, "ended", t4, false, t2);
+      A._EventStreamSubscription$(t1, "timeupdate", t3._as(new A.DuoAudioPlayer_closure0(_this)), false, t2);
+      seekbar = document.querySelector(".seekbar");
+      if (seekbar != null) {
+        t1 = J.get$onClick$x(seekbar);
+        t2 = t1.$ti;
+        A._EventStreamSubscription$(t1._target, t1._eventType, t2._eval$1("~(1)?")._as(new A.DuoAudioPlayer_closure1(_this, seekbar)), false, t2._precomputed1);
+      }
+    },
     toSection$1(section) {
       var t1, _this = this;
       _this._currentSection = section;
@@ -6766,6 +6984,8 @@
         return A.ioore(t1, 0);
       _this._currentPhrase = t1[0];
       _this._audioElement.currentTime = 0;
+      if (_this._nowPlaying)
+        _this.stop$0(0);
       A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
     },
     toPhrase$1(phrase) {
@@ -6779,47 +6999,116 @@
       _this._currentSection = t1.getSection$1(phrase.sectionNumber);
       _this._currentPhrase = phrase;
       _this._audioElement.currentTime = 0;
+      _this.play$0(0);
       A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
+    },
+    stop$0(_) {
+      this._audioElement.pause();
+      this._nowPlaying = false;
+      A.ViewService_updatePlayButton(false);
     },
     play$0(_) {
       var t2, t3, t4, _this = this,
         t1 = _this._audioElement;
-      if (_this._nowPlaying) {
-        t1.pause();
-        t1 = _this._nowPlaying = false;
-      } else {
-        t1.src = "resources/sound_sources/" + _this._currentPhrase.phraseNumber + ".mp3";
-        t1.currentTime = 0;
-        A.promiseToFuture(t1.play(), type$.dynamic);
-        t1 = _this._nowPlaying = true;
-      }
-      t2 = document;
-      t3 = t2.querySelector(".play-button");
-      t3.toString;
-      t4 = J.getInterceptor$x(t3);
-      if (t1)
-        t4.set$innerHtml(t3, '<i class="lni lni-stop"></i>');
-      else
-        t4.set$innerHtml(t3, '<i class="lni lni-play"></i>');
+      t1.src = "resources/sound_sources/" + _this._currentPhrase.phraseNumber + ".mp3";
+      t1.currentTime = 0;
+      A.promiseToFuture(t1.play(), type$.dynamic);
+      _this._nowPlaying = true;
+      A.ViewService_updatePlayButton(true);
       t1 = _this._currentPhrase;
+      t2 = document;
       t3 = t2.querySelector(".sentence-box");
       t3.toString;
       J.set$innerHtml$x(t3, t1.engText);
       t1 = _this._currentPhrase;
       t3 = _this._nowPlaying;
-      t1 = t1.phraseNumber;
-      t4 = t2.querySelector("#active-select-phrase-" + t1);
-      if (t4 != null) {
-        t4.id = "select-phrase-" + t1;
+      t4 = t2.querySelector(".active-select-phrase");
+      if (t4 != null)
         t4.className = "select-phrase lni lni-play";
-      }
-      if (t3) {
-        t2 = t2.querySelector("#select-phrase-" + t1);
-        t2.toString;
-        t2.id = "active-select-phrase-" + t1;
-        t2.className = "select-phrase lni lni-stop";
+      if (t3)
+        t2.querySelector("#select-phrase-" + t1.phraseNumber).className = "active-select-phrase lni lni-stop";
+    },
+    skipNext$0() {
+      var t1, t2, _this = this;
+      if (_this._currentPhrase.phraseNumber === B.JSArray_methods.get$last(_this._currentSection._phraseList).phraseNumber) {
+        t1 = _this._currentSection;
+        t2 = $.ScriptPool__instance;
+        if (t2 == null) {
+          t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+          t2._fetchData$0();
+          $.ScriptPool__instance = t2;
+        }
+        if (t1.sectionNumber === B.JSArray_methods.get$last(t2._sectionList).sectionNumber) {
+          t1 = $.ScriptPool__instance;
+          if (t1 == null) {
+            t1 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+            t1._fetchData$0();
+            $.ScriptPool__instance = t1;
+          }
+          _this.toSection$1(t1.getSection$1(1));
+        } else {
+          t1 = _this._currentSection;
+          t2 = $.ScriptPool__instance;
+          if (t2 == null) {
+            t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+            t2._fetchData$0();
+            $.ScriptPool__instance = t2;
+          }
+          _this.toSection$1(t2.getSection$1(t1.sectionNumber + 1));
+        }
+      } else {
+        t1 = $.ScriptPool__instance;
+        if (t1 == null) {
+          t1 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+          t1._fetchData$0();
+          $.ScriptPool__instance = t1;
+        }
+        _this.toPhrase$1(t1.getPhrase$1(_this._currentPhrase.phraseNumber + 1));
       }
     }
+  };
+  A.DuoAudioPlayer_closure.prototype = {
+    call$1(_e) {
+      this.$this.skipNext$0();
+    },
+    $signature: 2
+  };
+  A.DuoAudioPlayer_closure0.prototype = {
+    call$1($event) {
+      var t3,
+        t1 = this.$this._audioElement,
+        t2 = t1.currentTime;
+      t1 = t1.duration;
+      t3 = document.querySelector(".seekbar-gauge");
+      if (t3 != null) {
+        t3 = t3.style;
+        t1 = A.S(t2 / t1 * 100) + "%";
+        t3.width = t1;
+      }
+    },
+    $signature: 2
+  };
+  A.DuoAudioPlayer_closure1.prototype = {
+    call$1($event) {
+      var t1, t2, t3, x, width;
+      type$.MouseEvent._as($event);
+      t1 = $event.clientX;
+      $event.clientY;
+      t2 = this.seekbar;
+      t3 = t2.getBoundingClientRect().left;
+      t3.toString;
+      x = t1 - (t3 + B.JSNumber_methods.round$0(window.pageXOffset));
+      width = t2.clientWidth;
+      t2 = document.querySelector(".seekbar-gauge");
+      if (t2 != null) {
+        t1 = t2.style;
+        t2 = A.S(x / width * 100) + "%";
+        t1.width = t2;
+      }
+      t1 = this.$this._audioElement;
+      t1.currentTime = t1.duration * (x / width);
+    },
+    $signature: 1
   };
   A.main_closure.prototype = {
     call$1($event) {
@@ -6852,53 +7141,20 @@
   };
   A.main_closure0.prototype = {
     call$1($event) {
+      var t1;
       type$.MouseEvent._as($event);
-      this.audioPlayer.play$0(0);
+      t1 = this.audioPlayer;
+      if (t1._nowPlaying)
+        t1.stop$0(0);
+      else
+        t1.play$0(0);
     },
     $signature: 1
   };
   A.main_closure1.prototype = {
     call$1($event) {
-      var t1, t2, t3;
       type$.MouseEvent._as($event);
-      t1 = this.audioPlayer;
-      if (t1._currentPhrase.phraseNumber === B.JSArray_methods.get$last(t1._currentSection._phraseList).phraseNumber) {
-        t2 = t1._currentSection;
-        t3 = $.ScriptPool__instance;
-        if (t3 == null) {
-          t3 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-          t3._fetchData$0();
-          $.ScriptPool__instance = t3;
-        }
-        if (t2.sectionNumber === B.JSArray_methods.get$last(t3._sectionList).sectionNumber) {
-          t2 = $.ScriptPool__instance;
-          if (t2 == null) {
-            t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-            t2._fetchData$0();
-            $.ScriptPool__instance = t2;
-          }
-          t1.toSection$1(t2.getSection$1(1));
-        } else {
-          t2 = t1._currentSection;
-          t3 = $.ScriptPool__instance;
-          if (t3 == null) {
-            t3 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-            t3._fetchData$0();
-            $.ScriptPool__instance = t3;
-          }
-          t1.toSection$1(t3.getSection$1(t2.sectionNumber + 1));
-        }
-      } else {
-        t2 = $.ScriptPool__instance;
-        if (t2 == null) {
-          t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-          t2._fetchData$0();
-          $.ScriptPool__instance = t2;
-        }
-        t1.toPhrase$1(t2.getPhrase$1(t1._currentPhrase.phraseNumber + 1));
-      }
-      if (t1._nowPlaying)
-        t1.play$0(0);
+      this.audioPlayer.skipNext$0();
     },
     $signature: 1
   };
@@ -6932,17 +7188,16 @@
         }
         t1.toSection$1(t3.getSection$1(t2.sectionNumber - 1));
       }
-      if (t1._nowPlaying)
-        t1.play$0(0);
     },
     $signature: 1
   };
   A.main_closure3.prototype = {
     call$1(selectPhraseButton) {
-      var t1, phraseNumber, t2, t3;
+      var t1, t2, phraseNumber, t3;
       type$.Element._as(selectPhraseButton);
       t1 = selectPhraseButton.id;
-      phraseNumber = A.int_parse(A.stringReplaceAllUnchecked(t1, "select-phrase-", ""));
+      t2 = A.RegExp_RegExp("(.*)select-phrase-");
+      phraseNumber = A.int_parse(A.stringReplaceAllUnchecked(t1, t2, ""));
       t1 = J.get$onClick$x(selectPhraseButton);
       t2 = t1.$ti;
       t3 = t2._eval$1("~(1)?")._as(new A.main__closure(this.audioPlayer, phraseNumber));
@@ -6953,17 +7208,15 @@
   };
   A.main__closure.prototype = {
     call$1($event) {
-      var t1, t2;
+      var t1;
       type$.MouseEvent._as($event);
-      t1 = this.audioPlayer;
-      t2 = $.ScriptPool__instance;
-      if (t2 == null) {
-        t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-        t2._fetchData$0();
-        $.ScriptPool__instance = t2;
+      t1 = $.ScriptPool__instance;
+      if (t1 == null) {
+        t1 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+        t1._fetchData$0();
+        $.ScriptPool__instance = t1;
       }
-      t1.toPhrase$1(t2.getPhrase$1(this.phraseNumber));
-      t1.play$0(0);
+      this.audioPlayer.toPhrase$1(t1.getPhrase$1(this.phraseNumber));
     },
     $signature: 1
   };
@@ -7043,7 +7296,7 @@
     call$1(section) {
       B.JSArray_methods.forEach$1(type$.Section._as(section)._phraseList, new A.ScriptPool_getPhrase__closure(this._box_0, this.phraseNumber));
     },
-    $signature: 2
+    $signature: 3
   };
   A.ScriptPool_getPhrase__closure.prototype = {
     call$1(phrase) {
@@ -7078,7 +7331,7 @@
       type$.nullable_void_Function._as(null);
       A._EventStreamSubscription$(t1._target, t1._eventType, t3, false, t2._precomputed1);
     },
-    $signature: 2
+    $signature: 3
   };
   A.SectionMenu_setup__closure.prototype = {
     call$1($event) {
@@ -7115,20 +7368,20 @@
       t1 = t3.querySelector("#section-" + t1).style;
       t1.minHeight = "0";
     },
-    $signature: 2
+    $signature: 3
   };
   A.SectionMenu__generate_closure.prototype = {
     call$1(section) {
       var t1 = type$.Section._as(section).sectionNumber;
       return '<a class="uk-link-reset" id="select-section-' + t1 + '">' + t1 + "</a>\n";
     },
-    $signature: 9
+    $signature: 10
   };
   A.SectionMenu__generate_closure0.prototype = {
     call$1(section) {
       return A.SectionMenu__sectionPhraseList(type$.Section._as(section));
     },
-    $signature: 9
+    $signature: 10
   };
   A.SectionMenu__sectionPhraseList_closure.prototype = {
     call$1(phrase) {
@@ -7153,21 +7406,21 @@
     var _static_1 = hunkHelpers._static_1,
       _static_0 = hunkHelpers._static_0,
       _static = hunkHelpers.installStaticTearOff;
-    _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 3);
-    _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 3);
-    _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 3);
+    _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 4);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 4);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 4);
     _static_0(A, "async___startMicrotaskLoop$closure", "_startMicrotaskLoop", 0);
-    _static(A, "html__Html5NodeValidator__standardAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__standardAttributeValidator"], 10, 0);
-    _static(A, "html__Html5NodeValidator__uriAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__uriAttributeValidator"], 10, 0);
+    _static(A, "html__Html5NodeValidator__standardAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__standardAttributeValidator"], 11, 0);
+    _static(A, "html__Html5NodeValidator__uriAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__uriAttributeValidator"], 11, 0);
   })();
   (function inheritance() {
     var _mixin = hunkHelpers.mixin,
       _inherit = hunkHelpers.inherit,
       _inheritMany = hunkHelpers.inheritMany;
     _inherit(A.Object, null);
-    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.Iterable, A.ListIterator, A.Iterator, A.ConstantMap, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A._StackTrace, A.Closure, A.MapMixin, A.LinkedHashMapCell, A.LinkedHashMapKeyIterator, A.JSSyntaxRegExp, A._MatchImplementation, A._AllMatchesIterator, A.Rti, A._FunctionParameters, A._TimerImpl, A.AsyncError, A._Completer, A._FutureListener, A._Future, A._AsyncCallbackEntry, A.Stream, A.StreamSubscription, A._Zone, A.__SetBase_Object_SetMixin, A._LinkedHashSetCell, A._LinkedHashSetIterator, A._ListBase_Object_ListMixin, A.ListMixin, A.SetMixin, A.StackOverflowError, A._Exception, A.FormatException, A.Null, A._StringStackTrace, A.StringBuffer, A.CssStyleDeclarationBase, A.EventStreamProvider, A._Html5NodeValidator, A.ImmutableListMixin, A.NodeValidatorBuilder, A._SimpleNodeValidator, A._SvgNodeValidator, A.FixedSizeListIterator, A._SameOriginUriPolicy, A._ValidatingTreeSanitizer, A.NullRejectionException, A.DuoAudioPlayer, A.Phrase, A.ScriptPool, A.Section]);
+    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.SentinelValue, A.Iterable, A.ListIterator, A.Iterator, A.ConstantMap, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A._StackTrace, A.Closure, A.MapMixin, A.LinkedHashMapCell, A.LinkedHashMapKeyIterator, A.JSSyntaxRegExp, A._MatchImplementation, A._AllMatchesIterator, A.Rti, A._FunctionParameters, A._Type, A._TimerImpl, A.AsyncError, A._Completer, A._FutureListener, A._Future, A._AsyncCallbackEntry, A.Stream, A.StreamSubscription, A._Zone, A.__SetBase_Object_SetMixin, A._LinkedHashSetCell, A._LinkedHashSetIterator, A._ListBase_Object_ListMixin, A.ListMixin, A.SetMixin, A.StackOverflowError, A._Exception, A.FormatException, A.Null, A._StringStackTrace, A.StringBuffer, A.CssStyleDeclarationBase, A.EventStreamProvider, A._Html5NodeValidator, A.ImmutableListMixin, A.NodeValidatorBuilder, A._SimpleNodeValidator, A._SvgNodeValidator, A.FixedSizeListIterator, A._SameOriginUriPolicy, A._ValidatingTreeSanitizer, A.NullRejectionException, A.DuoAudioPlayer, A.Phrase, A.ScriptPool, A.Section]);
     _inheritMany(J.Interceptor, [J.JSBool, J.JSNull, J.JavaScriptObject, J.JSArray, J.JSNumber, J.JSString]);
-    _inheritMany(J.JavaScriptObject, [J.LegacyJavaScriptObject, A.EventTarget, A._CssStyleDeclaration_JavaScriptObject_CssStyleDeclarationBase, A.DomException, A.DomImplementation, A.Event, A.Location, A._NodeList_JavaScriptObject_ListMixin, A.__NamedNodeMap_JavaScriptObject_ListMixin]);
+    _inheritMany(J.JavaScriptObject, [J.LegacyJavaScriptObject, A.EventTarget, A._CssStyleDeclaration_JavaScriptObject_CssStyleDeclarationBase, A.DomException, A.DomImplementation, A.DomRectReadOnly, A.Event, A.Location, A._NodeList_JavaScriptObject_ListMixin, A.__NamedNodeMap_JavaScriptObject_ListMixin]);
     _inheritMany(J.LegacyJavaScriptObject, [J.PlainJavaScriptObject, J.UnknownJavaScriptObject, J.JavaScriptFunction]);
     _inherit(J.JSUnmodifiableArray, J.JSArray);
     _inheritMany(J.JSNumber, [J.JSInt, J.JSNumNotInt]);
@@ -7178,7 +7431,7 @@
     _inherit(A.WhereIterator, A.Iterator);
     _inherit(A.ConstantStringMap, A.ConstantMap);
     _inherit(A.NullError, A.TypeError);
-    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.Element_Element$html_closure, A._EventStreamSubscription_closure, A.NodeValidatorBuilder_allowsElement_closure, A.NodeValidatorBuilder_allowsAttribute_closure, A._SimpleNodeValidator_closure, A._SimpleNodeValidator_closure0, A._TemplatingNodeValidator_closure, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3, A.main__closure, A.ScriptPool_getSection_closure, A.ScriptPool_getPhrase_closure, A.ScriptPool_getPhrase__closure, A.SectionMenu_setup_closure, A.SectionMenu_setup__closure, A.SectionMenu_setup___closure, A.SectionMenu__generate_closure, A.SectionMenu__generate_closure0, A.SectionMenu__sectionPhraseList_closure]);
+    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.Element_Element$html_closure, A._EventStreamSubscription_closure, A.NodeValidatorBuilder_allowsElement_closure, A.NodeValidatorBuilder_allowsAttribute_closure, A._SimpleNodeValidator_closure, A._SimpleNodeValidator_closure0, A._TemplatingNodeValidator_closure, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.DuoAudioPlayer_closure, A.DuoAudioPlayer_closure0, A.DuoAudioPlayer_closure1, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3, A.main__closure, A.ScriptPool_getSection_closure, A.ScriptPool_getPhrase_closure, A.ScriptPool_getPhrase__closure, A.SectionMenu_setup_closure, A.SectionMenu_setup__closure, A.SectionMenu_setup___closure, A.SectionMenu__generate_closure, A.SectionMenu__generate_closure0, A.SectionMenu__sectionPhraseList_closure]);
     _inheritMany(A.TearOffClosure, [A.StaticClosure, A.BoundClosure]);
     _inherit(A._AssertionError, A.AssertionError);
     _inherit(A.MapBase, A.MapMixin);
@@ -7204,6 +7457,7 @@
     _inherit(A.MouseEvent, A.UIEvent);
     _inherit(A._NodeList_JavaScriptObject_ListMixin_ImmutableListMixin, A._NodeList_JavaScriptObject_ListMixin);
     _inherit(A.NodeList, A._NodeList_JavaScriptObject_ListMixin_ImmutableListMixin);
+    _inherit(A._DomRect, A.DomRectReadOnly);
     _inherit(A.__NamedNodeMap_JavaScriptObject_ListMixin_ImmutableListMixin, A.__NamedNodeMap_JavaScriptObject_ListMixin);
     _inherit(A._NamedNodeMap, A.__NamedNodeMap_JavaScriptObject_ListMixin_ImmutableListMixin);
     _inherit(A._ElementAttributeMap, A._AttributeMap);
@@ -7224,12 +7478,12 @@
     typeUniverse: {eC: new Map(), tR: {}, eT: {}, tPV: {}, sEA: []},
     mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List"},
     mangledNames: {},
-    types: ["~()", "~(MouseEvent)", "~(Section)", "~(~())", "Null(@)", "Null()", "bool(NodeValidator)", "bool(String)", "~(@)", "String(Section)", "bool(Element,String,String,_Html5NodeValidator)", "@(@)", "@(@,String)", "@(String)", "Null(~())", "Null(Object,StackTrace)", "_Future<@>(@)", "~(Object?,Object?)", "bool(Node)", "~(Event)", "String(String)", "~(Node,Node?)", "~(Element)", "~(String,Map<String,Map<String,String>>)", "~(String,Map<String,String>)", "int(Section,Section)", "bool(Section)", "~(Phrase)", "int(Phrase,Phrase)", "String(Phrase)"],
+    types: ["~()", "~(MouseEvent)", "~(Event)", "~(Section)", "~(~())", "Null(@)", "Null()", "bool(NodeValidator)", "bool(String)", "~(@)", "String(Section)", "bool(Element,String,String,_Html5NodeValidator)", "@(@)", "@(@,String)", "@(String)", "Null(~())", "Null(Object,StackTrace)", "_Future<@>(@)", "~(Object?,Object?)", "bool(Node)", "String(String)", "~(Node,Node?)", "~(Element)", "~(String,Map<String,Map<String,String>>)", "~(String,Map<String,String>)", "int(Section,Section)", "bool(Section)", "~(Phrase)", "int(Phrase,Phrase)", "String(Phrase)"],
     interceptorsByTag: null,
     leafTags: null,
     arrayRti: Symbol("$ti")
   };
-  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","AElement":"SvgElement","GraphicsElement":"SvgElement","BRElement":"HtmlElement","ShadowRoot":"Node","DocumentFragment":"Node","XmlDocument":"Document","Window":"EventTarget","PointerEvent":"MouseEvent","VideoElement":"MediaElement","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSNull":{"Null":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[],"Pattern":[]},"LateError":{"Error":[]},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"Iterable":["1"]},"ListIterator":{"Iterator":["1"]},"MappedListIterable":{"ListIterable":["2"],"Iterable":["2"],"ListIterable.E":"2","Iterable.E":"2"},"WhereIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereIterator":{"Iterator":["1"]},"ConstantMap":{"Map":["1","2"]},"ConstantStringMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapMixin":["1","2"],"Map":["1","2"],"MapMixin.K":"1","MapMixin.V":"2"},"LinkedHashMapKeyIterable":{"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"JSSyntaxRegExp":{"Pattern":[]},"_MatchImplementation":{"RegExpMatch":[]},"_AllMatchesIterator":{"Iterator":["RegExpMatch"]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_AsyncCompleter":{"_Completer":["1"]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_LinkedHashSet":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"_LinkedHashSetIterator":{"Iterator":["1"]},"ListBase":{"ListMixin":["1"],"List":["1"],"Iterable":["1"]},"MapBase":{"MapMixin":["1","2"],"Map":["1","2"]},"MapMixin":{"Map":["1","2"]},"_SetBase":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"int":{"num":[]},"String":{"Pattern":[]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"Element":{"Node":[],"EventTarget":[]},"MouseEvent":{"Event":[]},"Node":{"EventTarget":[]},"_Html5NodeValidator":{"NodeValidator":[]},"HtmlElement":{"Element":[],"Node":[],"EventTarget":[]},"AnchorElement":{"Element":[],"Node":[],"EventTarget":[]},"AreaElement":{"Element":[],"Node":[],"EventTarget":[]},"AudioElement":{"Element":[],"Node":[],"EventTarget":[]},"BaseElement":{"Element":[],"Node":[],"EventTarget":[]},"BodyElement":{"Element":[],"Node":[],"EventTarget":[]},"CharacterData":{"Node":[],"EventTarget":[]},"Document":{"Node":[],"EventTarget":[]},"_FrozenElementList":{"ListMixin":["1"],"List":["1"],"Iterable":["1"],"ListMixin.E":"1"},"FormElement":{"Element":[],"Node":[],"EventTarget":[]},"HtmlDocument":{"Node":[],"EventTarget":[]},"MediaElement":{"Element":[],"Node":[],"EventTarget":[]},"_ChildNodeListLazy":{"ListMixin":["Node"],"List":["Node"],"Iterable":["Node"],"ListMixin.E":"Node"},"NodeList":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"SelectElement":{"Element":[],"Node":[],"EventTarget":[]},"TableElement":{"Element":[],"Node":[],"EventTarget":[]},"TableRowElement":{"Element":[],"Node":[],"EventTarget":[]},"TableSectionElement":{"Element":[],"Node":[],"EventTarget":[]},"TemplateElement":{"Element":[],"Node":[],"EventTarget":[]},"UIEvent":{"Event":[]},"_Attr":{"Node":[],"EventTarget":[]},"_NamedNodeMap":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"_AttributeMap":{"MapMixin":["String","String"],"Map":["String","String"]},"_ElementAttributeMap":{"MapMixin":["String","String"],"Map":["String","String"],"MapMixin.K":"String","MapMixin.V":"String"},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"NodeValidatorBuilder":{"NodeValidator":[]},"_SimpleNodeValidator":{"NodeValidator":[]},"_TemplatingNodeValidator":{"NodeValidator":[]},"_SvgNodeValidator":{"NodeValidator":[]},"FixedSizeListIterator":{"Iterator":["1"]},"_SameOriginUriPolicy":{"UriPolicy":[]},"_ValidatingTreeSanitizer":{"NodeTreeSanitizer":[]},"ScriptElement0":{"SvgElement":[],"Element":[],"Node":[],"EventTarget":[]},"SvgElement":{"Element":[],"Node":[],"EventTarget":[]}}'));
+  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","AElement":"SvgElement","GraphicsElement":"SvgElement","BRElement":"HtmlElement","ShadowRoot":"Node","DocumentFragment":"Node","XmlDocument":"Document","Window":"EventTarget","PointerEvent":"MouseEvent","VideoElement":"MediaElement","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSNull":{"Null":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[],"Pattern":[]},"LateError":{"Error":[]},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"Iterable":["1"]},"ListIterator":{"Iterator":["1"]},"MappedListIterable":{"ListIterable":["2"],"Iterable":["2"],"ListIterable.E":"2","Iterable.E":"2"},"WhereIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereIterator":{"Iterator":["1"]},"ConstantMap":{"Map":["1","2"]},"ConstantStringMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapMixin":["1","2"],"Map":["1","2"],"MapMixin.K":"1","MapMixin.V":"2"},"LinkedHashMapKeyIterable":{"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"JSSyntaxRegExp":{"Pattern":[]},"_MatchImplementation":{"RegExpMatch":[]},"_AllMatchesIterator":{"Iterator":["RegExpMatch"]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_AsyncCompleter":{"_Completer":["1"]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_LinkedHashSet":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"_LinkedHashSetIterator":{"Iterator":["1"]},"ListBase":{"ListMixin":["1"],"List":["1"],"Iterable":["1"]},"MapBase":{"MapMixin":["1","2"],"Map":["1","2"]},"MapMixin":{"Map":["1","2"]},"_SetBase":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"int":{"num":[]},"String":{"Pattern":[]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"Element":{"Node":[],"EventTarget":[]},"MouseEvent":{"Event":[]},"Node":{"EventTarget":[]},"_Html5NodeValidator":{"NodeValidator":[]},"HtmlElement":{"Element":[],"Node":[],"EventTarget":[]},"AnchorElement":{"Element":[],"Node":[],"EventTarget":[]},"AreaElement":{"Element":[],"Node":[],"EventTarget":[]},"AudioElement":{"Element":[],"Node":[],"EventTarget":[]},"BaseElement":{"Element":[],"Node":[],"EventTarget":[]},"BodyElement":{"Element":[],"Node":[],"EventTarget":[]},"CharacterData":{"Node":[],"EventTarget":[]},"Document":{"Node":[],"EventTarget":[]},"DomRectReadOnly":{"Rectangle":["num"]},"_FrozenElementList":{"ListMixin":["1"],"List":["1"],"Iterable":["1"],"ListMixin.E":"1"},"FormElement":{"Element":[],"Node":[],"EventTarget":[]},"HtmlDocument":{"Node":[],"EventTarget":[]},"MediaElement":{"Element":[],"Node":[],"EventTarget":[]},"_ChildNodeListLazy":{"ListMixin":["Node"],"List":["Node"],"Iterable":["Node"],"ListMixin.E":"Node"},"NodeList":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"SelectElement":{"Element":[],"Node":[],"EventTarget":[]},"TableElement":{"Element":[],"Node":[],"EventTarget":[]},"TableRowElement":{"Element":[],"Node":[],"EventTarget":[]},"TableSectionElement":{"Element":[],"Node":[],"EventTarget":[]},"TemplateElement":{"Element":[],"Node":[],"EventTarget":[]},"UIEvent":{"Event":[]},"_Attr":{"Node":[],"EventTarget":[]},"_DomRect":{"Rectangle":["num"]},"_NamedNodeMap":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"_AttributeMap":{"MapMixin":["String","String"],"Map":["String","String"]},"_ElementAttributeMap":{"MapMixin":["String","String"],"Map":["String","String"],"MapMixin.K":"String","MapMixin.V":"String"},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"NodeValidatorBuilder":{"NodeValidator":[]},"_SimpleNodeValidator":{"NodeValidator":[]},"_TemplatingNodeValidator":{"NodeValidator":[]},"_SvgNodeValidator":{"NodeValidator":[]},"FixedSizeListIterator":{"Iterator":["1"]},"_SameOriginUriPolicy":{"UriPolicy":[]},"_ValidatingTreeSanitizer":{"NodeTreeSanitizer":[]},"ScriptElement0":{"SvgElement":[],"Element":[],"Node":[],"EventTarget":[]},"SvgElement":{"Element":[],"Node":[],"EventTarget":[]}}'));
   A._Universe_addErasedTypes(init.typeUniverse, JSON.parse('{"EfficientLengthIterable":1,"StreamSubscription":1,"ListBase":1,"MapBase":2,"_SetBase":1,"_ListBase_Object_ListMixin":1,"__SetBase_Object_SetMixin":1}'));
   var string$ = {
     Error_: "Error handler must accept one Object or one Object and a StackTrace as arguments, and return a value of the returned future's type"
@@ -7268,6 +7522,7 @@
       Null: findType("Null"),
       Object: findType("Object"),
       Phrase: findType("Phrase"),
+      Rectangle_num: findType("Rectangle<num>"),
       RegExpMatch: findType("RegExpMatch"),
       ScriptElement: findType("ScriptElement0"),
       Section: findType("Section"),
@@ -7280,6 +7535,7 @@
       UnknownJavaScriptObject: findType("UnknownJavaScriptObject"),
       _Attr: findType("_Attr"),
       _ChildNodeListLazy: findType("_ChildNodeListLazy"),
+      _ElementEventStreamImpl_Event: findType("_ElementEventStreamImpl<Event>"),
       _ElementEventStreamImpl_MouseEvent: findType("_ElementEventStreamImpl<MouseEvent>"),
       _FrozenElementList_Element: findType("_FrozenElementList<Element>"),
       _Future_dynamic: findType("_Future<@>"),
@@ -7316,6 +7572,7 @@
     B.Interceptor_methods = J.Interceptor.prototype;
     B.JSArray_methods = J.JSArray.prototype;
     B.JSInt_methods = J.JSInt.prototype;
+    B.JSNumber_methods = J.JSNumber.prototype;
     B.JSString_methods = J.JSString.prototype;
     B.JavaScriptFunction_methods = J.JavaScriptFunction.prototype;
     B.JavaScriptObject_methods = J.JavaScriptObject.prototype;
@@ -7442,6 +7699,7 @@
 };
     B.C_JS_CONST3 = function(hooks) { return hooks; }
 ;
+    B.C_SentinelValue = new A.SentinelValue();
     B.C__RootZone = new A._RootZone();
     B.C__StringStackTrace = new A._StringStackTrace();
     B.List_2Zi = A._setArrayType(makeConstList(["*::class", "*::dir", "*::draggable", "*::hidden", "*::id", "*::inert", "*::itemprop", "*::itemref", "*::itemscope", "*::lang", "*::spellcheck", "*::title", "*::translate", "A::accesskey", "A::coords", "A::hreflang", "A::name", "A::shape", "A::tabindex", "A::target", "A::type", "AREA::accesskey", "AREA::alt", "AREA::coords", "AREA::nohref", "AREA::shape", "AREA::tabindex", "AREA::target", "AUDIO::controls", "AUDIO::loop", "AUDIO::mediagroup", "AUDIO::muted", "AUDIO::preload", "BDO::dir", "BODY::alink", "BODY::bgcolor", "BODY::link", "BODY::text", "BODY::vlink", "BR::clear", "BUTTON::accesskey", "BUTTON::disabled", "BUTTON::name", "BUTTON::tabindex", "BUTTON::type", "BUTTON::value", "CANVAS::height", "CANVAS::width", "CAPTION::align", "COL::align", "COL::char", "COL::charoff", "COL::span", "COL::valign", "COL::width", "COLGROUP::align", "COLGROUP::char", "COLGROUP::charoff", "COLGROUP::span", "COLGROUP::valign", "COLGROUP::width", "COMMAND::checked", "COMMAND::command", "COMMAND::disabled", "COMMAND::label", "COMMAND::radiogroup", "COMMAND::type", "DATA::value", "DEL::datetime", "DETAILS::open", "DIR::compact", "DIV::align", "DL::compact", "FIELDSET::disabled", "FONT::color", "FONT::face", "FONT::size", "FORM::accept", "FORM::autocomplete", "FORM::enctype", "FORM::method", "FORM::name", "FORM::novalidate", "FORM::target", "FRAME::name", "H1::align", "H2::align", "H3::align", "H4::align", "H5::align", "H6::align", "HR::align", "HR::noshade", "HR::size", "HR::width", "HTML::version", "IFRAME::align", "IFRAME::frameborder", "IFRAME::height", "IFRAME::marginheight", "IFRAME::marginwidth", "IFRAME::width", "IMG::align", "IMG::alt", "IMG::border", "IMG::height", "IMG::hspace", "IMG::ismap", "IMG::name", "IMG::usemap", "IMG::vspace", "IMG::width", "INPUT::accept", "INPUT::accesskey", "INPUT::align", "INPUT::alt", "INPUT::autocomplete", "INPUT::autofocus", "INPUT::checked", "INPUT::disabled", "INPUT::inputmode", "INPUT::ismap", "INPUT::list", "INPUT::max", "INPUT::maxlength", "INPUT::min", "INPUT::multiple", "INPUT::name", "INPUT::placeholder", "INPUT::readonly", "INPUT::required", "INPUT::size", "INPUT::step", "INPUT::tabindex", "INPUT::type", "INPUT::usemap", "INPUT::value", "INS::datetime", "KEYGEN::disabled", "KEYGEN::keytype", "KEYGEN::name", "LABEL::accesskey", "LABEL::for", "LEGEND::accesskey", "LEGEND::align", "LI::type", "LI::value", "LINK::sizes", "MAP::name", "MENU::compact", "MENU::label", "MENU::type", "METER::high", "METER::low", "METER::max", "METER::min", "METER::value", "OBJECT::typemustmatch", "OL::compact", "OL::reversed", "OL::start", "OL::type", "OPTGROUP::disabled", "OPTGROUP::label", "OPTION::disabled", "OPTION::label", "OPTION::selected", "OPTION::value", "OUTPUT::for", "OUTPUT::name", "P::align", "PRE::width", "PROGRESS::max", "PROGRESS::min", "PROGRESS::value", "SELECT::autocomplete", "SELECT::disabled", "SELECT::multiple", "SELECT::name", "SELECT::required", "SELECT::size", "SELECT::tabindex", "SOURCE::type", "TABLE::align", "TABLE::bgcolor", "TABLE::border", "TABLE::cellpadding", "TABLE::cellspacing", "TABLE::frame", "TABLE::rules", "TABLE::summary", "TABLE::width", "TBODY::align", "TBODY::char", "TBODY::charoff", "TBODY::valign", "TD::abbr", "TD::align", "TD::axis", "TD::bgcolor", "TD::char", "TD::charoff", "TD::colspan", "TD::headers", "TD::height", "TD::nowrap", "TD::rowspan", "TD::scope", "TD::valign", "TD::width", "TEXTAREA::accesskey", "TEXTAREA::autocomplete", "TEXTAREA::cols", "TEXTAREA::disabled", "TEXTAREA::inputmode", "TEXTAREA::name", "TEXTAREA::placeholder", "TEXTAREA::readonly", "TEXTAREA::required", "TEXTAREA::rows", "TEXTAREA::tabindex", "TEXTAREA::wrap", "TFOOT::align", "TFOOT::char", "TFOOT::charoff", "TFOOT::valign", "TH::abbr", "TH::align", "TH::axis", "TH::bgcolor", "TH::char", "TH::charoff", "TH::colspan", "TH::headers", "TH::height", "TH::nowrap", "TH::rowspan", "TH::scope", "TH::valign", "TH::width", "THEAD::align", "THEAD::char", "THEAD::charoff", "THEAD::valign", "TR::align", "TR::bgcolor", "TR::char", "TR::charoff", "TR::valign", "TRACK::default", "TRACK::kind", "TRACK::label", "TRACK::srclang", "UL::compact", "UL::type", "VIDEO::controls", "VIDEO::height", "VIDEO::loop", "VIDEO::mediagroup", "VIDEO::muted", "VIDEO::preload", "VIDEO::width"]), type$.JSArray_String);
@@ -8102,6 +8360,7 @@
     B.Map_Xp3bx0 = new A.ConstantStringMap(2, {jp: "560 \u300c\u30dc\u30d6\u3001\u4eca\u65e5\u306f\u3053\u306e\u8fba\u307e\u3067\u306b\u3057\u307e\u3057\u3087\u3046\u3002\u304a\u8179\u304c\u307a\u3053\u307a\u3053\u3002\u300d\u300c\u3042\u3042\u3002\u6669\u98ef\u306f\u50d5\u304c\u304a\u3054\u308b\u3088\u3002\u300d", en: '560 "Let\'s call it a day, Bob. I\'m starved." "Yep. I\'ll buy you dinner."'}, B.List_jp_en, type$.ConstantStringMap_String_String);
     B.Map_AhrRc = new A.ConstantStringMap(13, {"548": B.Map_XpU5x, "549": B.Map_Xp6pl, "550": B.Map_XpO9i0, "551": B.Map_XpYPm, "552": B.Map_XpGNx, "553": B.Map_Xpum9, "554": B.Map_Xp69t, "555": B.Map_Xp6pl0, "556": B.Map_XpllC, "557": B.Map_XpASK, "558": B.Map_XpAKW0, "559": B.Map_XpB8J, "560": B.Map_Xp3bx0}, B.List_Ah00, type$.ConstantStringMap_of_String_and_Map_String_String);
     B.Map_swomH = new A.ConstantStringMap(45, {"1": B.Map_0ifx, "10": B.Map_lGAcR, "5": B.Map_Sc06A, "2": B.Map_1K6YB, "3": B.Map_I6iDU, "9": B.Map_GAyXb, "7": B.Map_TDAbd, "4": B.Map_Ahgg9, "6": B.Map_qDouf, "11": B.Map_J1UYK, "8": B.Map_bZaYD, "14": B.Map_qBMJJ, "15": B.Map_2VkSE, "12": B.Map_oiTW6, "16": B.Map_84keG, "13": B.Map_MPCtr, "22": B.Map_GRqAw, "21": B.Map_Gfs2C, "27": B.Map_2jCTu, "18": B.Map_FFay6, "19": B.Map_mGzeT, "17": B.Map_ijkZe, "20": B.Map_zA9Ek, "28": B.Map_Ao7L0, "24": B.Map_BENno, "30": B.Map_EZ0, "25": B.Map_reqpi, "23": B.Map_o5eX4, "33": B.Map_kMykZ, "29": B.Map_FKciW, "31": B.Map_sgqxn, "26": B.Map_ifMYA, "35": B.Map_UlNMc, "34": B.Map_sZmF7, "36": B.Map_wDgkc, "39": B.Map_swuIA, "32": B.Map_UU8aB, "43": B.Map_IIoqK, "38": B.Map_gelE0, "41": B.Map_YUlla, "40": B.Map_nZ4NX, "37": B.Map_EoGFY, "42": B.Map_Us7hJ, "44": B.Map_gmuLB, "45": B.Map_AhrRc}, B.List_swd, A.findType("ConstantStringMap<String,Map<String,Map<String,String>>>"));
+    B.Type_Object_xQ6 = A.typeLiteral("Object");
   })();
   (function staticFields() {
     $._JS_INTEROP_INTERCEPTOR_TAG = null;
@@ -8175,6 +8434,7 @@
       }
     }()));
     _lazyFinal($, "_AsyncRun__scheduleImmediateClosure", "$get$_AsyncRun__scheduleImmediateClosure", () => A._AsyncRun__initializeScheduleImmediate());
+    _lazyFinal($, "_hashSeed", "$get$_hashSeed", () => A.objectHashCode(B.Type_Object_xQ6));
     _lazyFinal($, "_Html5NodeValidator__allowedElements", "$get$_Html5NodeValidator__allowedElements", () => A.LinkedHashSet_LinkedHashSet$from(["A", "ABBR", "ACRONYM", "ADDRESS", "AREA", "ARTICLE", "ASIDE", "AUDIO", "B", "BDI", "BDO", "BIG", "BLOCKQUOTE", "BR", "BUTTON", "CANVAS", "CAPTION", "CENTER", "CITE", "CODE", "COL", "COLGROUP", "COMMAND", "DATA", "DATALIST", "DD", "DEL", "DETAILS", "DFN", "DIR", "DIV", "DL", "DT", "EM", "FIELDSET", "FIGCAPTION", "FIGURE", "FONT", "FOOTER", "FORM", "H1", "H2", "H3", "H4", "H5", "H6", "HEADER", "HGROUP", "HR", "I", "IFRAME", "IMG", "INPUT", "INS", "KBD", "LABEL", "LEGEND", "LI", "MAP", "MARK", "MENU", "METER", "NAV", "NOBR", "OL", "OPTGROUP", "OPTION", "OUTPUT", "P", "PRE", "PROGRESS", "Q", "S", "SAMP", "SECTION", "SELECT", "SMALL", "SOURCE", "SPAN", "STRIKE", "STRONG", "SUB", "SUMMARY", "SUP", "TABLE", "TBODY", "TD", "TEXTAREA", "TFOOT", "TH", "THEAD", "TIME", "TR", "TRACK", "TT", "U", "UL", "VAR", "VIDEO", "WBR"], type$.String));
   })();
   (function nativeSupport() {
@@ -8200,8 +8460,8 @@
       }
       init.dispatchPropertyName = init.getIsolateTag("dispatch_record");
     }();
-    hunkHelpers.setOrUpdateInterceptorsByTag({DOMError: J.JavaScriptObject, MediaError: J.JavaScriptObject, Navigator: J.JavaScriptObject, NavigatorConcurrentHardware: J.JavaScriptObject, NavigatorUserMediaError: J.JavaScriptObject, OverconstrainedError: J.JavaScriptObject, PositionError: J.JavaScriptObject, GeolocationPositionError: J.JavaScriptObject, Range: J.JavaScriptObject, HTMLBRElement: A.HtmlElement, HTMLButtonElement: A.HtmlElement, HTMLCanvasElement: A.HtmlElement, HTMLContentElement: A.HtmlElement, HTMLDListElement: A.HtmlElement, HTMLDataElement: A.HtmlElement, HTMLDataListElement: A.HtmlElement, HTMLDetailsElement: A.HtmlElement, HTMLDialogElement: A.HtmlElement, HTMLDivElement: A.HtmlElement, HTMLEmbedElement: A.HtmlElement, HTMLFieldSetElement: A.HtmlElement, HTMLHRElement: A.HtmlElement, HTMLHeadElement: A.HtmlElement, HTMLHeadingElement: A.HtmlElement, HTMLHtmlElement: A.HtmlElement, HTMLIFrameElement: A.HtmlElement, HTMLImageElement: A.HtmlElement, HTMLInputElement: A.HtmlElement, HTMLLIElement: A.HtmlElement, HTMLLabelElement: A.HtmlElement, HTMLLegendElement: A.HtmlElement, HTMLLinkElement: A.HtmlElement, HTMLMapElement: A.HtmlElement, HTMLMenuElement: A.HtmlElement, HTMLMetaElement: A.HtmlElement, HTMLMeterElement: A.HtmlElement, HTMLModElement: A.HtmlElement, HTMLOListElement: A.HtmlElement, HTMLObjectElement: A.HtmlElement, HTMLOptGroupElement: A.HtmlElement, HTMLOptionElement: A.HtmlElement, HTMLOutputElement: A.HtmlElement, HTMLParagraphElement: A.HtmlElement, HTMLParamElement: A.HtmlElement, HTMLPictureElement: A.HtmlElement, HTMLPreElement: A.HtmlElement, HTMLProgressElement: A.HtmlElement, HTMLQuoteElement: A.HtmlElement, HTMLScriptElement: A.HtmlElement, HTMLShadowElement: A.HtmlElement, HTMLSlotElement: A.HtmlElement, HTMLSourceElement: A.HtmlElement, HTMLSpanElement: A.HtmlElement, HTMLStyleElement: A.HtmlElement, HTMLTableCaptionElement: A.HtmlElement, HTMLTableCellElement: A.HtmlElement, HTMLTableDataCellElement: A.HtmlElement, HTMLTableHeaderCellElement: A.HtmlElement, HTMLTableColElement: A.HtmlElement, HTMLTextAreaElement: A.HtmlElement, HTMLTimeElement: A.HtmlElement, HTMLTitleElement: A.HtmlElement, HTMLTrackElement: A.HtmlElement, HTMLUListElement: A.HtmlElement, HTMLUnknownElement: A.HtmlElement, HTMLDirectoryElement: A.HtmlElement, HTMLFontElement: A.HtmlElement, HTMLFrameElement: A.HtmlElement, HTMLFrameSetElement: A.HtmlElement, HTMLMarqueeElement: A.HtmlElement, HTMLElement: A.HtmlElement, HTMLAnchorElement: A.AnchorElement, HTMLAreaElement: A.AreaElement, HTMLAudioElement: A.AudioElement, HTMLBaseElement: A.BaseElement, HTMLBodyElement: A.BodyElement, CDATASection: A.CharacterData, CharacterData: A.CharacterData, Comment: A.CharacterData, ProcessingInstruction: A.CharacterData, Text: A.CharacterData, CSSStyleDeclaration: A.CssStyleDeclaration, MSStyleCSSProperties: A.CssStyleDeclaration, CSS2Properties: A.CssStyleDeclaration, XMLDocument: A.Document, Document: A.Document, DOMException: A.DomException, DOMImplementation: A.DomImplementation, Element: A.Element, AbortPaymentEvent: A.Event, AnimationEvent: A.Event, AnimationPlaybackEvent: A.Event, ApplicationCacheErrorEvent: A.Event, BackgroundFetchClickEvent: A.Event, BackgroundFetchEvent: A.Event, BackgroundFetchFailEvent: A.Event, BackgroundFetchedEvent: A.Event, BeforeInstallPromptEvent: A.Event, BeforeUnloadEvent: A.Event, BlobEvent: A.Event, CanMakePaymentEvent: A.Event, ClipboardEvent: A.Event, CloseEvent: A.Event, CustomEvent: A.Event, DeviceMotionEvent: A.Event, DeviceOrientationEvent: A.Event, ErrorEvent: A.Event, ExtendableEvent: A.Event, ExtendableMessageEvent: A.Event, FetchEvent: A.Event, FontFaceSetLoadEvent: A.Event, ForeignFetchEvent: A.Event, GamepadEvent: A.Event, HashChangeEvent: A.Event, InstallEvent: A.Event, MediaEncryptedEvent: A.Event, MediaKeyMessageEvent: A.Event, MediaQueryListEvent: A.Event, MediaStreamEvent: A.Event, MediaStreamTrackEvent: A.Event, MessageEvent: A.Event, MIDIConnectionEvent: A.Event, MIDIMessageEvent: A.Event, MutationEvent: A.Event, NotificationEvent: A.Event, PageTransitionEvent: A.Event, PaymentRequestEvent: A.Event, PaymentRequestUpdateEvent: A.Event, PopStateEvent: A.Event, PresentationConnectionAvailableEvent: A.Event, PresentationConnectionCloseEvent: A.Event, ProgressEvent: A.Event, PromiseRejectionEvent: A.Event, PushEvent: A.Event, RTCDataChannelEvent: A.Event, RTCDTMFToneChangeEvent: A.Event, RTCPeerConnectionIceEvent: A.Event, RTCTrackEvent: A.Event, SecurityPolicyViolationEvent: A.Event, SensorErrorEvent: A.Event, SpeechRecognitionError: A.Event, SpeechRecognitionEvent: A.Event, SpeechSynthesisEvent: A.Event, StorageEvent: A.Event, SyncEvent: A.Event, TrackEvent: A.Event, TransitionEvent: A.Event, WebKitTransitionEvent: A.Event, VRDeviceEvent: A.Event, VRDisplayEvent: A.Event, VRSessionEvent: A.Event, MojoInterfaceRequestEvent: A.Event, ResourceProgressEvent: A.Event, USBConnectionEvent: A.Event, IDBVersionChangeEvent: A.Event, AudioProcessingEvent: A.Event, OfflineAudioCompletionEvent: A.Event, WebGLContextEvent: A.Event, Event: A.Event, InputEvent: A.Event, SubmitEvent: A.Event, Window: A.EventTarget, DOMWindow: A.EventTarget, EventTarget: A.EventTarget, HTMLFormElement: A.FormElement, HTMLDocument: A.HtmlDocument, Location: A.Location, HTMLVideoElement: A.MediaElement, HTMLMediaElement: A.MediaElement, MouseEvent: A.MouseEvent, DragEvent: A.MouseEvent, PointerEvent: A.MouseEvent, WheelEvent: A.MouseEvent, DocumentFragment: A.Node, ShadowRoot: A.Node, DocumentType: A.Node, Node: A.Node, NodeList: A.NodeList, RadioNodeList: A.NodeList, HTMLSelectElement: A.SelectElement, HTMLTableElement: A.TableElement, HTMLTableRowElement: A.TableRowElement, HTMLTableSectionElement: A.TableSectionElement, HTMLTemplateElement: A.TemplateElement, CompositionEvent: A.UIEvent, FocusEvent: A.UIEvent, KeyboardEvent: A.UIEvent, TextEvent: A.UIEvent, TouchEvent: A.UIEvent, UIEvent: A.UIEvent, Attr: A._Attr, NamedNodeMap: A._NamedNodeMap, MozNamedAttrMap: A._NamedNodeMap, SVGScriptElement: A.ScriptElement0, SVGAElement: A.SvgElement, SVGAnimateElement: A.SvgElement, SVGAnimateMotionElement: A.SvgElement, SVGAnimateTransformElement: A.SvgElement, SVGAnimationElement: A.SvgElement, SVGCircleElement: A.SvgElement, SVGClipPathElement: A.SvgElement, SVGDefsElement: A.SvgElement, SVGDescElement: A.SvgElement, SVGDiscardElement: A.SvgElement, SVGEllipseElement: A.SvgElement, SVGFEBlendElement: A.SvgElement, SVGFEColorMatrixElement: A.SvgElement, SVGFEComponentTransferElement: A.SvgElement, SVGFECompositeElement: A.SvgElement, SVGFEConvolveMatrixElement: A.SvgElement, SVGFEDiffuseLightingElement: A.SvgElement, SVGFEDisplacementMapElement: A.SvgElement, SVGFEDistantLightElement: A.SvgElement, SVGFEFloodElement: A.SvgElement, SVGFEFuncAElement: A.SvgElement, SVGFEFuncBElement: A.SvgElement, SVGFEFuncGElement: A.SvgElement, SVGFEFuncRElement: A.SvgElement, SVGFEGaussianBlurElement: A.SvgElement, SVGFEImageElement: A.SvgElement, SVGFEMergeElement: A.SvgElement, SVGFEMergeNodeElement: A.SvgElement, SVGFEMorphologyElement: A.SvgElement, SVGFEOffsetElement: A.SvgElement, SVGFEPointLightElement: A.SvgElement, SVGFESpecularLightingElement: A.SvgElement, SVGFESpotLightElement: A.SvgElement, SVGFETileElement: A.SvgElement, SVGFETurbulenceElement: A.SvgElement, SVGFilterElement: A.SvgElement, SVGForeignObjectElement: A.SvgElement, SVGGElement: A.SvgElement, SVGGeometryElement: A.SvgElement, SVGGraphicsElement: A.SvgElement, SVGImageElement: A.SvgElement, SVGLineElement: A.SvgElement, SVGLinearGradientElement: A.SvgElement, SVGMarkerElement: A.SvgElement, SVGMaskElement: A.SvgElement, SVGMetadataElement: A.SvgElement, SVGPathElement: A.SvgElement, SVGPatternElement: A.SvgElement, SVGPolygonElement: A.SvgElement, SVGPolylineElement: A.SvgElement, SVGRadialGradientElement: A.SvgElement, SVGRectElement: A.SvgElement, SVGSetElement: A.SvgElement, SVGStopElement: A.SvgElement, SVGStyleElement: A.SvgElement, SVGSVGElement: A.SvgElement, SVGSwitchElement: A.SvgElement, SVGSymbolElement: A.SvgElement, SVGTSpanElement: A.SvgElement, SVGTextContentElement: A.SvgElement, SVGTextElement: A.SvgElement, SVGTextPathElement: A.SvgElement, SVGTextPositioningElement: A.SvgElement, SVGTitleElement: A.SvgElement, SVGUseElement: A.SvgElement, SVGViewElement: A.SvgElement, SVGGradientElement: A.SvgElement, SVGComponentTransferFunctionElement: A.SvgElement, SVGFEDropShadowElement: A.SvgElement, SVGMPathElement: A.SvgElement, SVGElement: A.SvgElement});
-    hunkHelpers.setOrUpdateLeafTags({DOMError: true, MediaError: true, Navigator: true, NavigatorConcurrentHardware: true, NavigatorUserMediaError: true, OverconstrainedError: true, PositionError: true, GeolocationPositionError: true, Range: true, HTMLBRElement: true, HTMLButtonElement: true, HTMLCanvasElement: true, HTMLContentElement: true, HTMLDListElement: true, HTMLDataElement: true, HTMLDataListElement: true, HTMLDetailsElement: true, HTMLDialogElement: true, HTMLDivElement: true, HTMLEmbedElement: true, HTMLFieldSetElement: true, HTMLHRElement: true, HTMLHeadElement: true, HTMLHeadingElement: true, HTMLHtmlElement: true, HTMLIFrameElement: true, HTMLImageElement: true, HTMLInputElement: true, HTMLLIElement: true, HTMLLabelElement: true, HTMLLegendElement: true, HTMLLinkElement: true, HTMLMapElement: true, HTMLMenuElement: true, HTMLMetaElement: true, HTMLMeterElement: true, HTMLModElement: true, HTMLOListElement: true, HTMLObjectElement: true, HTMLOptGroupElement: true, HTMLOptionElement: true, HTMLOutputElement: true, HTMLParagraphElement: true, HTMLParamElement: true, HTMLPictureElement: true, HTMLPreElement: true, HTMLProgressElement: true, HTMLQuoteElement: true, HTMLScriptElement: true, HTMLShadowElement: true, HTMLSlotElement: true, HTMLSourceElement: true, HTMLSpanElement: true, HTMLStyleElement: true, HTMLTableCaptionElement: true, HTMLTableCellElement: true, HTMLTableDataCellElement: true, HTMLTableHeaderCellElement: true, HTMLTableColElement: true, HTMLTextAreaElement: true, HTMLTimeElement: true, HTMLTitleElement: true, HTMLTrackElement: true, HTMLUListElement: true, HTMLUnknownElement: true, HTMLDirectoryElement: true, HTMLFontElement: true, HTMLFrameElement: true, HTMLFrameSetElement: true, HTMLMarqueeElement: true, HTMLElement: false, HTMLAnchorElement: true, HTMLAreaElement: true, HTMLAudioElement: true, HTMLBaseElement: true, HTMLBodyElement: true, CDATASection: true, CharacterData: true, Comment: true, ProcessingInstruction: true, Text: true, CSSStyleDeclaration: true, MSStyleCSSProperties: true, CSS2Properties: true, XMLDocument: true, Document: false, DOMException: true, DOMImplementation: true, Element: false, AbortPaymentEvent: true, AnimationEvent: true, AnimationPlaybackEvent: true, ApplicationCacheErrorEvent: true, BackgroundFetchClickEvent: true, BackgroundFetchEvent: true, BackgroundFetchFailEvent: true, BackgroundFetchedEvent: true, BeforeInstallPromptEvent: true, BeforeUnloadEvent: true, BlobEvent: true, CanMakePaymentEvent: true, ClipboardEvent: true, CloseEvent: true, CustomEvent: true, DeviceMotionEvent: true, DeviceOrientationEvent: true, ErrorEvent: true, ExtendableEvent: true, ExtendableMessageEvent: true, FetchEvent: true, FontFaceSetLoadEvent: true, ForeignFetchEvent: true, GamepadEvent: true, HashChangeEvent: true, InstallEvent: true, MediaEncryptedEvent: true, MediaKeyMessageEvent: true, MediaQueryListEvent: true, MediaStreamEvent: true, MediaStreamTrackEvent: true, MessageEvent: true, MIDIConnectionEvent: true, MIDIMessageEvent: true, MutationEvent: true, NotificationEvent: true, PageTransitionEvent: true, PaymentRequestEvent: true, PaymentRequestUpdateEvent: true, PopStateEvent: true, PresentationConnectionAvailableEvent: true, PresentationConnectionCloseEvent: true, ProgressEvent: true, PromiseRejectionEvent: true, PushEvent: true, RTCDataChannelEvent: true, RTCDTMFToneChangeEvent: true, RTCPeerConnectionIceEvent: true, RTCTrackEvent: true, SecurityPolicyViolationEvent: true, SensorErrorEvent: true, SpeechRecognitionError: true, SpeechRecognitionEvent: true, SpeechSynthesisEvent: true, StorageEvent: true, SyncEvent: true, TrackEvent: true, TransitionEvent: true, WebKitTransitionEvent: true, VRDeviceEvent: true, VRDisplayEvent: true, VRSessionEvent: true, MojoInterfaceRequestEvent: true, ResourceProgressEvent: true, USBConnectionEvent: true, IDBVersionChangeEvent: true, AudioProcessingEvent: true, OfflineAudioCompletionEvent: true, WebGLContextEvent: true, Event: false, InputEvent: false, SubmitEvent: false, Window: true, DOMWindow: true, EventTarget: false, HTMLFormElement: true, HTMLDocument: true, Location: true, HTMLVideoElement: true, HTMLMediaElement: false, MouseEvent: true, DragEvent: true, PointerEvent: true, WheelEvent: true, DocumentFragment: true, ShadowRoot: true, DocumentType: true, Node: false, NodeList: true, RadioNodeList: true, HTMLSelectElement: true, HTMLTableElement: true, HTMLTableRowElement: true, HTMLTableSectionElement: true, HTMLTemplateElement: true, CompositionEvent: true, FocusEvent: true, KeyboardEvent: true, TextEvent: true, TouchEvent: true, UIEvent: false, Attr: true, NamedNodeMap: true, MozNamedAttrMap: true, SVGScriptElement: true, SVGAElement: true, SVGAnimateElement: true, SVGAnimateMotionElement: true, SVGAnimateTransformElement: true, SVGAnimationElement: true, SVGCircleElement: true, SVGClipPathElement: true, SVGDefsElement: true, SVGDescElement: true, SVGDiscardElement: true, SVGEllipseElement: true, SVGFEBlendElement: true, SVGFEColorMatrixElement: true, SVGFEComponentTransferElement: true, SVGFECompositeElement: true, SVGFEConvolveMatrixElement: true, SVGFEDiffuseLightingElement: true, SVGFEDisplacementMapElement: true, SVGFEDistantLightElement: true, SVGFEFloodElement: true, SVGFEFuncAElement: true, SVGFEFuncBElement: true, SVGFEFuncGElement: true, SVGFEFuncRElement: true, SVGFEGaussianBlurElement: true, SVGFEImageElement: true, SVGFEMergeElement: true, SVGFEMergeNodeElement: true, SVGFEMorphologyElement: true, SVGFEOffsetElement: true, SVGFEPointLightElement: true, SVGFESpecularLightingElement: true, SVGFESpotLightElement: true, SVGFETileElement: true, SVGFETurbulenceElement: true, SVGFilterElement: true, SVGForeignObjectElement: true, SVGGElement: true, SVGGeometryElement: true, SVGGraphicsElement: true, SVGImageElement: true, SVGLineElement: true, SVGLinearGradientElement: true, SVGMarkerElement: true, SVGMaskElement: true, SVGMetadataElement: true, SVGPathElement: true, SVGPatternElement: true, SVGPolygonElement: true, SVGPolylineElement: true, SVGRadialGradientElement: true, SVGRectElement: true, SVGSetElement: true, SVGStopElement: true, SVGStyleElement: true, SVGSVGElement: true, SVGSwitchElement: true, SVGSymbolElement: true, SVGTSpanElement: true, SVGTextContentElement: true, SVGTextElement: true, SVGTextPathElement: true, SVGTextPositioningElement: true, SVGTitleElement: true, SVGUseElement: true, SVGViewElement: true, SVGGradientElement: true, SVGComponentTransferFunctionElement: true, SVGFEDropShadowElement: true, SVGMPathElement: true, SVGElement: false});
+    hunkHelpers.setOrUpdateInterceptorsByTag({DOMError: J.JavaScriptObject, MediaError: J.JavaScriptObject, Navigator: J.JavaScriptObject, NavigatorConcurrentHardware: J.JavaScriptObject, NavigatorUserMediaError: J.JavaScriptObject, OverconstrainedError: J.JavaScriptObject, PositionError: J.JavaScriptObject, GeolocationPositionError: J.JavaScriptObject, Range: J.JavaScriptObject, HTMLBRElement: A.HtmlElement, HTMLButtonElement: A.HtmlElement, HTMLCanvasElement: A.HtmlElement, HTMLContentElement: A.HtmlElement, HTMLDListElement: A.HtmlElement, HTMLDataElement: A.HtmlElement, HTMLDataListElement: A.HtmlElement, HTMLDetailsElement: A.HtmlElement, HTMLDialogElement: A.HtmlElement, HTMLDivElement: A.HtmlElement, HTMLEmbedElement: A.HtmlElement, HTMLFieldSetElement: A.HtmlElement, HTMLHRElement: A.HtmlElement, HTMLHeadElement: A.HtmlElement, HTMLHeadingElement: A.HtmlElement, HTMLHtmlElement: A.HtmlElement, HTMLIFrameElement: A.HtmlElement, HTMLImageElement: A.HtmlElement, HTMLInputElement: A.HtmlElement, HTMLLIElement: A.HtmlElement, HTMLLabelElement: A.HtmlElement, HTMLLegendElement: A.HtmlElement, HTMLLinkElement: A.HtmlElement, HTMLMapElement: A.HtmlElement, HTMLMenuElement: A.HtmlElement, HTMLMetaElement: A.HtmlElement, HTMLMeterElement: A.HtmlElement, HTMLModElement: A.HtmlElement, HTMLOListElement: A.HtmlElement, HTMLObjectElement: A.HtmlElement, HTMLOptGroupElement: A.HtmlElement, HTMLOptionElement: A.HtmlElement, HTMLOutputElement: A.HtmlElement, HTMLParagraphElement: A.HtmlElement, HTMLParamElement: A.HtmlElement, HTMLPictureElement: A.HtmlElement, HTMLPreElement: A.HtmlElement, HTMLProgressElement: A.HtmlElement, HTMLQuoteElement: A.HtmlElement, HTMLScriptElement: A.HtmlElement, HTMLShadowElement: A.HtmlElement, HTMLSlotElement: A.HtmlElement, HTMLSourceElement: A.HtmlElement, HTMLSpanElement: A.HtmlElement, HTMLStyleElement: A.HtmlElement, HTMLTableCaptionElement: A.HtmlElement, HTMLTableCellElement: A.HtmlElement, HTMLTableDataCellElement: A.HtmlElement, HTMLTableHeaderCellElement: A.HtmlElement, HTMLTableColElement: A.HtmlElement, HTMLTextAreaElement: A.HtmlElement, HTMLTimeElement: A.HtmlElement, HTMLTitleElement: A.HtmlElement, HTMLTrackElement: A.HtmlElement, HTMLUListElement: A.HtmlElement, HTMLUnknownElement: A.HtmlElement, HTMLDirectoryElement: A.HtmlElement, HTMLFontElement: A.HtmlElement, HTMLFrameElement: A.HtmlElement, HTMLFrameSetElement: A.HtmlElement, HTMLMarqueeElement: A.HtmlElement, HTMLElement: A.HtmlElement, HTMLAnchorElement: A.AnchorElement, HTMLAreaElement: A.AreaElement, HTMLAudioElement: A.AudioElement, HTMLBaseElement: A.BaseElement, HTMLBodyElement: A.BodyElement, CDATASection: A.CharacterData, CharacterData: A.CharacterData, Comment: A.CharacterData, ProcessingInstruction: A.CharacterData, Text: A.CharacterData, CSSStyleDeclaration: A.CssStyleDeclaration, MSStyleCSSProperties: A.CssStyleDeclaration, CSS2Properties: A.CssStyleDeclaration, XMLDocument: A.Document, Document: A.Document, DOMException: A.DomException, DOMImplementation: A.DomImplementation, DOMRectReadOnly: A.DomRectReadOnly, Element: A.Element, AbortPaymentEvent: A.Event, AnimationEvent: A.Event, AnimationPlaybackEvent: A.Event, ApplicationCacheErrorEvent: A.Event, BackgroundFetchClickEvent: A.Event, BackgroundFetchEvent: A.Event, BackgroundFetchFailEvent: A.Event, BackgroundFetchedEvent: A.Event, BeforeInstallPromptEvent: A.Event, BeforeUnloadEvent: A.Event, BlobEvent: A.Event, CanMakePaymentEvent: A.Event, ClipboardEvent: A.Event, CloseEvent: A.Event, CustomEvent: A.Event, DeviceMotionEvent: A.Event, DeviceOrientationEvent: A.Event, ErrorEvent: A.Event, ExtendableEvent: A.Event, ExtendableMessageEvent: A.Event, FetchEvent: A.Event, FontFaceSetLoadEvent: A.Event, ForeignFetchEvent: A.Event, GamepadEvent: A.Event, HashChangeEvent: A.Event, InstallEvent: A.Event, MediaEncryptedEvent: A.Event, MediaKeyMessageEvent: A.Event, MediaQueryListEvent: A.Event, MediaStreamEvent: A.Event, MediaStreamTrackEvent: A.Event, MessageEvent: A.Event, MIDIConnectionEvent: A.Event, MIDIMessageEvent: A.Event, MutationEvent: A.Event, NotificationEvent: A.Event, PageTransitionEvent: A.Event, PaymentRequestEvent: A.Event, PaymentRequestUpdateEvent: A.Event, PopStateEvent: A.Event, PresentationConnectionAvailableEvent: A.Event, PresentationConnectionCloseEvent: A.Event, ProgressEvent: A.Event, PromiseRejectionEvent: A.Event, PushEvent: A.Event, RTCDataChannelEvent: A.Event, RTCDTMFToneChangeEvent: A.Event, RTCPeerConnectionIceEvent: A.Event, RTCTrackEvent: A.Event, SecurityPolicyViolationEvent: A.Event, SensorErrorEvent: A.Event, SpeechRecognitionError: A.Event, SpeechRecognitionEvent: A.Event, SpeechSynthesisEvent: A.Event, StorageEvent: A.Event, SyncEvent: A.Event, TrackEvent: A.Event, TransitionEvent: A.Event, WebKitTransitionEvent: A.Event, VRDeviceEvent: A.Event, VRDisplayEvent: A.Event, VRSessionEvent: A.Event, MojoInterfaceRequestEvent: A.Event, ResourceProgressEvent: A.Event, USBConnectionEvent: A.Event, IDBVersionChangeEvent: A.Event, AudioProcessingEvent: A.Event, OfflineAudioCompletionEvent: A.Event, WebGLContextEvent: A.Event, Event: A.Event, InputEvent: A.Event, SubmitEvent: A.Event, Window: A.EventTarget, DOMWindow: A.EventTarget, EventTarget: A.EventTarget, HTMLFormElement: A.FormElement, HTMLDocument: A.HtmlDocument, Location: A.Location, HTMLVideoElement: A.MediaElement, HTMLMediaElement: A.MediaElement, MouseEvent: A.MouseEvent, DragEvent: A.MouseEvent, PointerEvent: A.MouseEvent, WheelEvent: A.MouseEvent, DocumentFragment: A.Node, ShadowRoot: A.Node, DocumentType: A.Node, Node: A.Node, NodeList: A.NodeList, RadioNodeList: A.NodeList, HTMLSelectElement: A.SelectElement, HTMLTableElement: A.TableElement, HTMLTableRowElement: A.TableRowElement, HTMLTableSectionElement: A.TableSectionElement, HTMLTemplateElement: A.TemplateElement, CompositionEvent: A.UIEvent, FocusEvent: A.UIEvent, KeyboardEvent: A.UIEvent, TextEvent: A.UIEvent, TouchEvent: A.UIEvent, UIEvent: A.UIEvent, Attr: A._Attr, ClientRect: A._DomRect, DOMRect: A._DomRect, NamedNodeMap: A._NamedNodeMap, MozNamedAttrMap: A._NamedNodeMap, SVGScriptElement: A.ScriptElement0, SVGAElement: A.SvgElement, SVGAnimateElement: A.SvgElement, SVGAnimateMotionElement: A.SvgElement, SVGAnimateTransformElement: A.SvgElement, SVGAnimationElement: A.SvgElement, SVGCircleElement: A.SvgElement, SVGClipPathElement: A.SvgElement, SVGDefsElement: A.SvgElement, SVGDescElement: A.SvgElement, SVGDiscardElement: A.SvgElement, SVGEllipseElement: A.SvgElement, SVGFEBlendElement: A.SvgElement, SVGFEColorMatrixElement: A.SvgElement, SVGFEComponentTransferElement: A.SvgElement, SVGFECompositeElement: A.SvgElement, SVGFEConvolveMatrixElement: A.SvgElement, SVGFEDiffuseLightingElement: A.SvgElement, SVGFEDisplacementMapElement: A.SvgElement, SVGFEDistantLightElement: A.SvgElement, SVGFEFloodElement: A.SvgElement, SVGFEFuncAElement: A.SvgElement, SVGFEFuncBElement: A.SvgElement, SVGFEFuncGElement: A.SvgElement, SVGFEFuncRElement: A.SvgElement, SVGFEGaussianBlurElement: A.SvgElement, SVGFEImageElement: A.SvgElement, SVGFEMergeElement: A.SvgElement, SVGFEMergeNodeElement: A.SvgElement, SVGFEMorphologyElement: A.SvgElement, SVGFEOffsetElement: A.SvgElement, SVGFEPointLightElement: A.SvgElement, SVGFESpecularLightingElement: A.SvgElement, SVGFESpotLightElement: A.SvgElement, SVGFETileElement: A.SvgElement, SVGFETurbulenceElement: A.SvgElement, SVGFilterElement: A.SvgElement, SVGForeignObjectElement: A.SvgElement, SVGGElement: A.SvgElement, SVGGeometryElement: A.SvgElement, SVGGraphicsElement: A.SvgElement, SVGImageElement: A.SvgElement, SVGLineElement: A.SvgElement, SVGLinearGradientElement: A.SvgElement, SVGMarkerElement: A.SvgElement, SVGMaskElement: A.SvgElement, SVGMetadataElement: A.SvgElement, SVGPathElement: A.SvgElement, SVGPatternElement: A.SvgElement, SVGPolygonElement: A.SvgElement, SVGPolylineElement: A.SvgElement, SVGRadialGradientElement: A.SvgElement, SVGRectElement: A.SvgElement, SVGSetElement: A.SvgElement, SVGStopElement: A.SvgElement, SVGStyleElement: A.SvgElement, SVGSVGElement: A.SvgElement, SVGSwitchElement: A.SvgElement, SVGSymbolElement: A.SvgElement, SVGTSpanElement: A.SvgElement, SVGTextContentElement: A.SvgElement, SVGTextElement: A.SvgElement, SVGTextPathElement: A.SvgElement, SVGTextPositioningElement: A.SvgElement, SVGTitleElement: A.SvgElement, SVGUseElement: A.SvgElement, SVGViewElement: A.SvgElement, SVGGradientElement: A.SvgElement, SVGComponentTransferFunctionElement: A.SvgElement, SVGFEDropShadowElement: A.SvgElement, SVGMPathElement: A.SvgElement, SVGElement: A.SvgElement});
+    hunkHelpers.setOrUpdateLeafTags({DOMError: true, MediaError: true, Navigator: true, NavigatorConcurrentHardware: true, NavigatorUserMediaError: true, OverconstrainedError: true, PositionError: true, GeolocationPositionError: true, Range: true, HTMLBRElement: true, HTMLButtonElement: true, HTMLCanvasElement: true, HTMLContentElement: true, HTMLDListElement: true, HTMLDataElement: true, HTMLDataListElement: true, HTMLDetailsElement: true, HTMLDialogElement: true, HTMLDivElement: true, HTMLEmbedElement: true, HTMLFieldSetElement: true, HTMLHRElement: true, HTMLHeadElement: true, HTMLHeadingElement: true, HTMLHtmlElement: true, HTMLIFrameElement: true, HTMLImageElement: true, HTMLInputElement: true, HTMLLIElement: true, HTMLLabelElement: true, HTMLLegendElement: true, HTMLLinkElement: true, HTMLMapElement: true, HTMLMenuElement: true, HTMLMetaElement: true, HTMLMeterElement: true, HTMLModElement: true, HTMLOListElement: true, HTMLObjectElement: true, HTMLOptGroupElement: true, HTMLOptionElement: true, HTMLOutputElement: true, HTMLParagraphElement: true, HTMLParamElement: true, HTMLPictureElement: true, HTMLPreElement: true, HTMLProgressElement: true, HTMLQuoteElement: true, HTMLScriptElement: true, HTMLShadowElement: true, HTMLSlotElement: true, HTMLSourceElement: true, HTMLSpanElement: true, HTMLStyleElement: true, HTMLTableCaptionElement: true, HTMLTableCellElement: true, HTMLTableDataCellElement: true, HTMLTableHeaderCellElement: true, HTMLTableColElement: true, HTMLTextAreaElement: true, HTMLTimeElement: true, HTMLTitleElement: true, HTMLTrackElement: true, HTMLUListElement: true, HTMLUnknownElement: true, HTMLDirectoryElement: true, HTMLFontElement: true, HTMLFrameElement: true, HTMLFrameSetElement: true, HTMLMarqueeElement: true, HTMLElement: false, HTMLAnchorElement: true, HTMLAreaElement: true, HTMLAudioElement: true, HTMLBaseElement: true, HTMLBodyElement: true, CDATASection: true, CharacterData: true, Comment: true, ProcessingInstruction: true, Text: true, CSSStyleDeclaration: true, MSStyleCSSProperties: true, CSS2Properties: true, XMLDocument: true, Document: false, DOMException: true, DOMImplementation: true, DOMRectReadOnly: false, Element: false, AbortPaymentEvent: true, AnimationEvent: true, AnimationPlaybackEvent: true, ApplicationCacheErrorEvent: true, BackgroundFetchClickEvent: true, BackgroundFetchEvent: true, BackgroundFetchFailEvent: true, BackgroundFetchedEvent: true, BeforeInstallPromptEvent: true, BeforeUnloadEvent: true, BlobEvent: true, CanMakePaymentEvent: true, ClipboardEvent: true, CloseEvent: true, CustomEvent: true, DeviceMotionEvent: true, DeviceOrientationEvent: true, ErrorEvent: true, ExtendableEvent: true, ExtendableMessageEvent: true, FetchEvent: true, FontFaceSetLoadEvent: true, ForeignFetchEvent: true, GamepadEvent: true, HashChangeEvent: true, InstallEvent: true, MediaEncryptedEvent: true, MediaKeyMessageEvent: true, MediaQueryListEvent: true, MediaStreamEvent: true, MediaStreamTrackEvent: true, MessageEvent: true, MIDIConnectionEvent: true, MIDIMessageEvent: true, MutationEvent: true, NotificationEvent: true, PageTransitionEvent: true, PaymentRequestEvent: true, PaymentRequestUpdateEvent: true, PopStateEvent: true, PresentationConnectionAvailableEvent: true, PresentationConnectionCloseEvent: true, ProgressEvent: true, PromiseRejectionEvent: true, PushEvent: true, RTCDataChannelEvent: true, RTCDTMFToneChangeEvent: true, RTCPeerConnectionIceEvent: true, RTCTrackEvent: true, SecurityPolicyViolationEvent: true, SensorErrorEvent: true, SpeechRecognitionError: true, SpeechRecognitionEvent: true, SpeechSynthesisEvent: true, StorageEvent: true, SyncEvent: true, TrackEvent: true, TransitionEvent: true, WebKitTransitionEvent: true, VRDeviceEvent: true, VRDisplayEvent: true, VRSessionEvent: true, MojoInterfaceRequestEvent: true, ResourceProgressEvent: true, USBConnectionEvent: true, IDBVersionChangeEvent: true, AudioProcessingEvent: true, OfflineAudioCompletionEvent: true, WebGLContextEvent: true, Event: false, InputEvent: false, SubmitEvent: false, Window: true, DOMWindow: true, EventTarget: false, HTMLFormElement: true, HTMLDocument: true, Location: true, HTMLVideoElement: true, HTMLMediaElement: false, MouseEvent: true, DragEvent: true, PointerEvent: true, WheelEvent: true, DocumentFragment: true, ShadowRoot: true, DocumentType: true, Node: false, NodeList: true, RadioNodeList: true, HTMLSelectElement: true, HTMLTableElement: true, HTMLTableRowElement: true, HTMLTableSectionElement: true, HTMLTemplateElement: true, CompositionEvent: true, FocusEvent: true, KeyboardEvent: true, TextEvent: true, TouchEvent: true, UIEvent: false, Attr: true, ClientRect: true, DOMRect: true, NamedNodeMap: true, MozNamedAttrMap: true, SVGScriptElement: true, SVGAElement: true, SVGAnimateElement: true, SVGAnimateMotionElement: true, SVGAnimateTransformElement: true, SVGAnimationElement: true, SVGCircleElement: true, SVGClipPathElement: true, SVGDefsElement: true, SVGDescElement: true, SVGDiscardElement: true, SVGEllipseElement: true, SVGFEBlendElement: true, SVGFEColorMatrixElement: true, SVGFEComponentTransferElement: true, SVGFECompositeElement: true, SVGFEConvolveMatrixElement: true, SVGFEDiffuseLightingElement: true, SVGFEDisplacementMapElement: true, SVGFEDistantLightElement: true, SVGFEFloodElement: true, SVGFEFuncAElement: true, SVGFEFuncBElement: true, SVGFEFuncGElement: true, SVGFEFuncRElement: true, SVGFEGaussianBlurElement: true, SVGFEImageElement: true, SVGFEMergeElement: true, SVGFEMergeNodeElement: true, SVGFEMorphologyElement: true, SVGFEOffsetElement: true, SVGFEPointLightElement: true, SVGFESpecularLightingElement: true, SVGFESpotLightElement: true, SVGFETileElement: true, SVGFETurbulenceElement: true, SVGFilterElement: true, SVGForeignObjectElement: true, SVGGElement: true, SVGGeometryElement: true, SVGGraphicsElement: true, SVGImageElement: true, SVGLineElement: true, SVGLinearGradientElement: true, SVGMarkerElement: true, SVGMaskElement: true, SVGMetadataElement: true, SVGPathElement: true, SVGPatternElement: true, SVGPolygonElement: true, SVGPolylineElement: true, SVGRadialGradientElement: true, SVGRectElement: true, SVGSetElement: true, SVGStopElement: true, SVGStyleElement: true, SVGSVGElement: true, SVGSwitchElement: true, SVGSymbolElement: true, SVGTSpanElement: true, SVGTextContentElement: true, SVGTextElement: true, SVGTextPathElement: true, SVGTextPositioningElement: true, SVGTitleElement: true, SVGUseElement: true, SVGViewElement: true, SVGGradientElement: true, SVGComponentTransferFunctionElement: true, SVGFEDropShadowElement: true, SVGMPathElement: true, SVGElement: false});
   })();
   convertAllToFastObject(holders);
   convertToFastObject($);
