@@ -53,7 +53,7 @@ html, body {
   display: inline-block;
 }
 
-.open-section-items {
+.open-section-menu {
   position: fixed;
   display: block;
   bottom: 10px;
@@ -61,22 +61,27 @@ html, body {
 }
 
 .content-box {
-  display:block;
+  position: relative;
+  display: table;
   height: 50%;
   width: 100%;
 }
 
 .sentence-box {
-  margin: 0;
   position: absolute;
-  top: 40%;
+  top: 50%;
   left: 50%;
-  margin-right: -50%;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%) translateX(-50%);
+  -webkit-transform: translateY(-50%) translateX(-50%);
+}
+
+.section-menu-container {
+  height: 40%;
+  width: 100%;
 }
 
 .section-menu {
-  height: 40%;
+  height: 100%;
   width: 100%;
   border-top: solid 2px #EDF2F7;
   margin:0;
@@ -84,9 +89,10 @@ html, body {
 }
 
 .section-items {
-  height: 100%;
   margin: 0;
   overflow-y: scroll;
+  display: none;
+  height: 0;
 }
 
 .section-items::-webkit-scrollbar {
