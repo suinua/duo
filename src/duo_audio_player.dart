@@ -52,8 +52,7 @@ class DuoAudioPlayer {
     if (_nowPlaying) stop();
 
     ViewService.updateNavBar(_currentSection, _currentPhrase);
-    //_BookImageController.update(_currentPhrase);
-    //_ScriptContextController.update(phrase);
+    ViewService.updateSentenceBox(_currentPhrase);
   }
 
   void toPhrase(Phrase phrase, {bool continuePlaying = true}) {
@@ -63,8 +62,7 @@ class DuoAudioPlayer {
     if (continuePlaying) play();
 
     ViewService.updateNavBar(_currentSection, _currentPhrase);
-    //_BookImageController.update(_currentPhrase);
-    //_ScriptContextController.update(phrase);
+    ViewService.updateSentenceBox(_currentPhrase);
   }
 
   void stop() {
@@ -84,7 +82,6 @@ class DuoAudioPlayer {
     _nowPlaying = true;
 
     ViewService.updatePlayButton(_nowPlaying);
-    ViewService.updateSentenceBox(_currentPhrase);
     ViewService.updateSelectPhraseButton(_currentPhrase, _nowPlaying);
   }
 
@@ -119,7 +116,7 @@ class DuoAudioPlayer {
         toSection(ScriptPool().getSection(previousSectionNumber));
       }
     } else {
-      toPhrase(ScriptPool().getPhrase(_currentPhrase.phraseNumber + 1),
+      toPhrase(ScriptPool().getPhrase(_currentPhrase.phraseNumber - 1),
           continuePlaying: _nowPlaying);
     }
   }

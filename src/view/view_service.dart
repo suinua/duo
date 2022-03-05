@@ -11,7 +11,8 @@ class ViewService {
   }
 
   static void updateSentenceBox(Phrase phrase) {
-    querySelector('.sentence-box')!.innerHtml = phrase.engText;
+    querySelector('.eng-sentence')!.innerHtml = '<span>English</span>' + phrase.engText;
+    querySelector('.jp-sentence')!.innerHtml = '<span>Japanese</span>' +phrase.jpText;
   }
 
   static void updateSelectPhraseButton(Phrase currentPhrase, bool nowPlaying) {
