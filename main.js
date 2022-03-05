@@ -4086,6 +4086,14 @@
       t1.toString;
       J.set$innerHtml$x(t1, "No : " + phrase.phraseNumber);
     },
+    ViewService_updateSelectPhraseButton(currentPhrase, nowPlaying) {
+      var t1 = document,
+        t2 = t1.querySelector(".active-select-phrase");
+      if (t2 != null)
+        t2.className = "select-phrase lni lni-play";
+      if (nowPlaying)
+        t1.querySelector("#select-phrase-" + currentPhrase.phraseNumber).className = "active-select-phrase lni lni-stop";
+    },
     ViewService_updatePlayButton(nowPlaying) {
       var t2,
         t1 = document.querySelector(".play-button");
@@ -6988,7 +6996,7 @@
         _this.stop$0(0);
       A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
     },
-    toPhrase$1(phrase) {
+    toPhrase$2$continuePlaying(phrase, continuePlaying) {
       var _this = this,
         t1 = $.ScriptPool__instance;
       if (t1 == null) {
@@ -6999,16 +7007,22 @@
       _this._currentSection = t1.getSection$1(phrase.sectionNumber);
       _this._currentPhrase = phrase;
       _this._audioElement.currentTime = 0;
-      _this.play$0(0);
+      if (continuePlaying)
+        _this.play$0(0);
       A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
     },
+    toPhrase$1(phrase) {
+      return this.toPhrase$2$continuePlaying(phrase, true);
+    },
     stop$0(_) {
-      this._audioElement.pause();
-      this._nowPlaying = false;
+      var _this = this;
+      _this._audioElement.pause();
+      _this._nowPlaying = false;
       A.ViewService_updatePlayButton(false);
+      A.ViewService_updateSelectPhraseButton(_this._currentPhrase, _this._nowPlaying);
     },
     play$0(_) {
-      var t2, t3, t4, _this = this,
+      var t2, _this = this,
         t1 = _this._audioElement;
       t1.src = "resources/sound_sources/" + _this._currentPhrase.phraseNumber + ".mp3";
       t1.currentTime = 0;
@@ -7016,17 +7030,10 @@
       _this._nowPlaying = true;
       A.ViewService_updatePlayButton(true);
       t1 = _this._currentPhrase;
-      t2 = document;
-      t3 = t2.querySelector(".sentence-box");
-      t3.toString;
-      J.set$innerHtml$x(t3, t1.engText);
-      t1 = _this._currentPhrase;
-      t3 = _this._nowPlaying;
-      t4 = t2.querySelector(".active-select-phrase");
-      if (t4 != null)
-        t4.className = "select-phrase lni lni-play";
-      if (t3)
-        t2.querySelector("#select-phrase-" + t1.phraseNumber).className = "active-select-phrase lni lni-stop";
+      t2 = document.querySelector(".sentence-box");
+      t2.toString;
+      J.set$innerHtml$x(t2, t1.engText);
+      A.ViewService_updateSelectPhraseButton(_this._currentPhrase, _this._nowPlaying);
     },
     skipNext$0() {
       var t1, t2, _this = this;
@@ -7063,7 +7070,7 @@
           t1._fetchData$0();
           $.ScriptPool__instance = t1;
         }
-        _this.toPhrase$1(t1.getPhrase$1(_this._currentPhrase.phraseNumber + 1));
+        _this.toPhrase$2$continuePlaying(t1.getPhrase$1(_this._currentPhrase.phraseNumber + 1), _this._nowPlaying);
       }
     }
   };
@@ -7163,22 +7170,7 @@
       var t1, t2, t3;
       type$.MouseEvent._as($event);
       t1 = this.audioPlayer;
-      t2 = t1._currentSection;
-      t3 = $.ScriptPool__instance;
-      if (t3 == null) {
-        t3 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-        t3._fetchData$0();
-        $.ScriptPool__instance = t3;
-      }
-      if (t2.sectionNumber === B.JSArray_methods.get$first(t3._sectionList).sectionNumber) {
-        t2 = $.ScriptPool__instance;
-        if (t2 == null) {
-          t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-          t2._fetchData$0();
-          $.ScriptPool__instance = t2;
-        }
-        t1.toSection$1(t2.getSection$1(1));
-      } else {
+      if (t1._currentPhrase.phraseNumber === B.JSArray_methods.get$first(t1._currentSection._phraseList).phraseNumber) {
         t2 = t1._currentSection;
         t3 = $.ScriptPool__instance;
         if (t3 == null) {
@@ -7186,7 +7178,32 @@
           t3._fetchData$0();
           $.ScriptPool__instance = t3;
         }
-        t1.toSection$1(t3.getSection$1(t2.sectionNumber - 1));
+        if (t2.sectionNumber === B.JSArray_methods.get$first(t3._sectionList).sectionNumber) {
+          t2 = $.ScriptPool__instance;
+          if (t2 == null) {
+            t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+            t2._fetchData$0();
+            $.ScriptPool__instance = t2;
+          }
+          t1.toSection$1(t2.getSection$1(1));
+        } else {
+          t2 = t1._currentSection;
+          t3 = $.ScriptPool__instance;
+          if (t3 == null) {
+            t3 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+            t3._fetchData$0();
+            $.ScriptPool__instance = t3;
+          }
+          t1.toSection$1(t3.getSection$1(t2.sectionNumber - 1));
+        }
+      } else {
+        t2 = $.ScriptPool__instance;
+        if (t2 == null) {
+          t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+          t2._fetchData$0();
+          $.ScriptPool__instance = t2;
+        }
+        t1.toPhrase$2$continuePlaying(t2.getPhrase$1(t1._currentPhrase.phraseNumber + 1), t1._nowPlaying);
       }
     },
     $signature: 1

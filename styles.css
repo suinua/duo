@@ -145,14 +145,14 @@ html, body {
 .seekbar {
   height: 8px;
   width: 100%;
-  background: gray;
+  background: #E9E9E9;
   border-radius: 10px;
 }
 
 .seekbar-gauge {
   height: 100%;
   width: 0;
-  background: black;
+  background: #b6b6b6;
   border-radius: 10px;
   transition-duration: 500ms;
 }
