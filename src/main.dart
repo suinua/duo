@@ -3,6 +3,7 @@ import 'dart:html';
 import 'duo_audio_player.dart';
 import 'pool/script_pool.dart';
 import 'view/section_menu.dart';
+import 'view/view_service.dart';
 
 void main() {
   var audioPlayer = DuoAudioPlayer();
@@ -31,11 +32,6 @@ void main() {
   var playButton = querySelector('.play-button')!;
   playButton.onClick.listen((event) {
     audioPlayer.play();
-    if (audioPlayer.nowPlaying) {
-      playButton.innerHtml = '<i class="lni lni-stop"></i>';
-    } else {
-      playButton.innerHtml = '<i class="lni lni-play"></i>';
-    }
   });
 
   //next
@@ -53,9 +49,10 @@ void main() {
   //phraseの選択
   var selectPhraseButtons = querySelectorAll('.select-phrase');
   selectPhraseButtons.forEach((selectPhraseButton) {
-    var phraseNumber = int.parse(selectPhraseButton.getAttribute('phrase-number')!);
+    var phraseNumber = int.parse(selectPhraseButton.id.replaceAll('select-phrase-', ''));
     selectPhraseButton.onClick.listen((event) {
       audioPlayer.toPhrase(ScriptPool().getPhrase(phraseNumber));
+      audioPlayer.play();
     });
   });
 }

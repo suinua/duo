@@ -5,21 +5,17 @@ import '../pool/script_pool.dart';
 
 class SectionMenu {
   static void setup() {
-    var html = _generate(ScriptPool().getSectionList());
-    var _htmlValidator = NodeValidatorBuilder.common()
-      ..allowElement('span', attributes: ['uk-icon','phrase-number']);
-
-    //ignore: unsafe_html
-    querySelector('.section-menu-container')!.setInnerHtml(html, validator: _htmlValidator);
+    var html = _generate(ScriptPool().sectionList);
+    querySelector('.section-menu-container')!.innerHtml = html;
 
     querySelector('#section-1')!.style.display = 'block';
     querySelector('#section-1')!.style.height = '100%';
     querySelector('#section-1')!.style.minHeight = '100%';
 
-    ScriptPool().getSectionList().forEach((section) {
+    ScriptPool().sectionList.forEach((section) {
       var selectSectionButton = querySelector('#select-section-${section.sectionNumber}')!;
       selectSectionButton.onClick.listen((event) {
-        ScriptPool().getSectionList().forEach((section) {
+        ScriptPool().sectionList.forEach((section) {
           querySelector('#section-${section.sectionNumber}')!.style.display = 'none';
           querySelector('#section-${section.sectionNumber}')!.style.height = '0';
           querySelector('#section-${section.sectionNumber}')!.style.minHeight = '0';
@@ -48,7 +44,7 @@ class SectionMenu {
   static String _sectionPhraseList(Section section) {
     var phraseListAsHtml = section.phraseList.map((phrase) => '''
 <li>
-    <span class="select-phrase" phrase-number="${phrase.phraseNumber}" uk-icon="icon: play; ratio: 1.5"></span>
+    <i class="select-phrase lni lni-play" id="select-phrase-${phrase.phraseNumber}"></i>
     <p>${phrase.engText}</p>
 </li>''').join();
 

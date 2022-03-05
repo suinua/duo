@@ -14,6 +14,7 @@ class ScriptPool {
   }
 
   final List<Section> _sectionList = [];
+  List<Section> get sectionList => _sectionList;
 
   void _fetchData() {
     _scriptRawData.forEach((String sectionNumberAsStr, sections) {
@@ -48,10 +49,6 @@ class ScriptPool {
     });
 
     return result!;
-  }
-
-  List<Section> getSectionList() {
-    return _sectionList;
   }
 }
 

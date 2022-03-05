@@ -3,6 +3,7 @@ import 'dart:html';
 import 'model/phrase.dart';
 import 'model/section.dart';
 import 'pool/script_pool.dart';
+import 'view/view_service.dart';
 
 class DuoAudioPlayer {
   Section _currentSection;
@@ -24,6 +25,7 @@ class DuoAudioPlayer {
     _currentPhrase = section.getPhrase(0);
     _audioElement.currentTime = 0;
 
+    ViewService.updateNavBar(_currentSection, _currentPhrase);
     //_BookImageController.update(_currentPhrase);
     //_ScriptContextController.update(phrase);
   }
@@ -33,6 +35,7 @@ class DuoAudioPlayer {
     _currentPhrase = phrase;
     _audioElement.currentTime = 0;
 
+    ViewService.updateNavBar(_currentSection, _currentPhrase);
     //_BookImageController.update(_currentPhrase);
     //_ScriptContextController.update(phrase);
   }
@@ -43,22 +46,33 @@ class DuoAudioPlayer {
 
       _nowPlaying = false;
     } else {
-      _audioElement.src = 'resources/sound_sources/$_currentPhrase.mp3';
+      _audioElement.src =
+          'resources/sound_sources/${_currentPhrase.phraseNumber}.mp3';
       _audioElement.currentTime = time;
       _audioElement.play();
 
       _nowPlaying = true;
     }
+
+    ViewService.updatePlayButton(_nowPlaying);
+    ViewService.updateSentenceBox(_currentPhrase);
+    ViewService.updateSelectPhraseButton(_currentPhrase, _nowPlaying);
   }
 
   void skipNext() {
-    //最後のPhraseだったら最初のSectionに
-    if (_currentSection.sectionNumber ==
-        _currentSection.phraseList.last.sectionNumber) {
-      toSection(ScriptPool().getSection(1));
+    //このSectionの最後のPhraseなら、次のセクションに
+    if (_currentPhrase.phraseNumber ==
+        _currentSection.phraseList.last.phraseNumber) {
+      //最後のSectionだったら最初のSectionに
+      if (_currentSection.sectionNumber ==
+          ScriptPool().sectionList.last.sectionNumber) {
+        toSection(ScriptPool().getSection(1));
+      } else {
+        var nextSectionNumber = _currentSection.sectionNumber + 1;
+        toSection(ScriptPool().getSection(nextSectionNumber));
+      }
     } else {
-      var nextSectionNumber = _currentSection.sectionNumber + 1;
-      toSection(ScriptPool().getSection(nextSectionNumber));
+      toPhrase(ScriptPool().getPhrase(_currentPhrase.phraseNumber + 1));
     }
 
     if (_nowPlaying) play();
@@ -66,7 +80,8 @@ class DuoAudioPlayer {
 
   void skipPrevious() {
     //最初のSectionだったら戻す
-    if (_currentSection.sectionNumber == ScriptPool().getSectionList().first.sectionNumber) {
+    if (_currentSection.sectionNumber ==
+        ScriptPool().sectionList.first.sectionNumber) {
       toSection(ScriptPool().getSection(1));
     } else {
       var previousSectionNumber = _currentSection.sectionNumber - 1;
