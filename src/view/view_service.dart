@@ -15,14 +15,10 @@ class ViewService {
   }
 
   static void updateSelectPhraseButton(Phrase currentPhrase, bool nowPlaying) {
-    querySelector('#active-select-phrase-${currentPhrase.phraseNumber}')
-      ?..id = 'select-phrase-${currentPhrase.phraseNumber}'
-      ..className = 'select-phrase lni lni-play';
+    querySelector('.active-select-phrase')?.className = 'select-phrase lni lni-play';
 
     if (nowPlaying) {
-      querySelector('#select-phrase-${currentPhrase.phraseNumber}')!
-        ..id = 'active-select-phrase-${currentPhrase.phraseNumber}'
-        ..className = 'select-phrase lni lni-stop';
+      querySelector('#select-phrase-${currentPhrase.phraseNumber}')!.className = 'active-select-phrase lni lni-stop';
     }
   }
 

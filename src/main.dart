@@ -31,7 +31,11 @@ void main() {
   //再生、停止
   var playButton = querySelector('.play-button')!;
   playButton.onClick.listen((event) {
-    audioPlayer.play();
+    if (audioPlayer.nowPlaying) {
+      audioPlayer.stop();
+    } else {
+      audioPlayer.play();
+    }
   });
 
   //next
@@ -49,10 +53,9 @@ void main() {
   //phraseの選択
   var selectPhraseButtons = querySelectorAll('.select-phrase');
   selectPhraseButtons.forEach((selectPhraseButton) {
-    var phraseNumber = int.parse(selectPhraseButton.id.replaceAll('select-phrase-', ''));
+    var phraseNumber = int.parse(selectPhraseButton.id.replaceAll(RegExp('(.*)select-phrase-'), ''));
     selectPhraseButton.onClick.listen((event) {
       audioPlayer.toPhrase(ScriptPool().getPhrase(phraseNumber));
-      audioPlayer.play();
     });
   });
 }

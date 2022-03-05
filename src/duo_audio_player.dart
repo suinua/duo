@@ -18,12 +18,38 @@ class DuoAudioPlayer {
       : _audioElement = AudioElement(),
         _currentSection = ScriptPool().getSection(1),
         _currentPhrase = ScriptPool().getSection(1).getPhrase(0),
-        _nowPlaying = false;
+        _nowPlaying = false {
+    _audioElement.onEnded.listen((_e) {
+      skipNext();
+    });
+
+    //シークバー
+    _audioElement.onTimeUpdate.listen((event) {
+      var percentage =
+          (_audioElement.currentTime / _audioElement.duration) * 100;
+      querySelector('.seekbar-gauge')?.style.width = '$percentage%';
+    });
+
+    var seekbar = querySelector('.seekbar');
+    seekbar?.onClick.listen((MouseEvent event) {
+      var clickX = event.client.x;
+
+      var clientRect = seekbar.getBoundingClientRect();
+      var positionX = clientRect.left + window.pageXOffset;
+
+      var x = clickX - positionX;
+
+      var width = seekbar.clientWidth;
+      querySelector('.seekbar-gauge')?.style.width = '${(x / width) * 100}%';
+      _audioElement.currentTime = _audioElement.duration * (x / width);
+    });
+  }
 
   void toSection(Section section) {
     _currentSection = section;
     _currentPhrase = section.getPhrase(0);
     _audioElement.currentTime = 0;
+    if (_nowPlaying) stop();
 
     ViewService.updateNavBar(_currentSection, _currentPhrase);
     //_BookImageController.update(_currentPhrase);
@@ -34,25 +60,27 @@ class DuoAudioPlayer {
     _currentSection = ScriptPool().getSection(phrase.sectionNumber);
     _currentPhrase = phrase;
     _audioElement.currentTime = 0;
+    play();
 
     ViewService.updateNavBar(_currentSection, _currentPhrase);
     //_BookImageController.update(_currentPhrase);
     //_ScriptContextController.update(phrase);
   }
 
+  void stop() {
+    _audioElement.pause();
+
+    _nowPlaying = false;
+    ViewService.updatePlayButton(_nowPlaying);
+  }
+
   void play({double time = 0}) {
-    if (_nowPlaying) {
-      _audioElement.pause();
+    _audioElement.src =
+        'resources/sound_sources/${_currentPhrase.phraseNumber}.mp3';
+    _audioElement.currentTime = time;
+    _audioElement.play();
 
-      _nowPlaying = false;
-    } else {
-      _audioElement.src =
-          'resources/sound_sources/${_currentPhrase.phraseNumber}.mp3';
-      _audioElement.currentTime = time;
-      _audioElement.play();
-
-      _nowPlaying = true;
-    }
+    _nowPlaying = true;
 
     ViewService.updatePlayButton(_nowPlaying);
     ViewService.updateSentenceBox(_currentPhrase);
@@ -74,8 +102,6 @@ class DuoAudioPlayer {
     } else {
       toPhrase(ScriptPool().getPhrase(_currentPhrase.phraseNumber + 1));
     }
-
-    if (_nowPlaying) play();
   }
 
   void skipPrevious() {
@@ -87,7 +113,5 @@ class DuoAudioPlayer {
       var previousSectionNumber = _currentSection.sectionNumber - 1;
       toSection(ScriptPool().getSection(previousSectionNumber));
     }
-
-    if (_nowPlaying) play();
   }
 }
