@@ -3944,32 +3944,38 @@
       t1 = document;
       t2 = t1.querySelector(".open-section-menu");
       t2.toString;
-      t2 = J.get$onClick$x(t2);
-      t3 = t2.$ti;
-      t4 = t3._eval$1("~(1)?")._as(new A.main_closure());
-      type$.nullable_void_Function._as(null);
-      A._EventStreamSubscription$(t2._target, t2._eventType, t4, false, t3._precomputed1);
-      t3 = t1.querySelector(".play-button");
-      t3.toString;
-      t3 = J.get$onClick$x(t3);
+      t3 = J.get$onClick$x(t2);
       t4 = t3.$ti;
-      A._EventStreamSubscription$(t3._target, t3._eventType, t4._eval$1("~(1)?")._as(new A.main_closure0(audioPlayer)), false, t4._precomputed1);
-      t4 = t1.querySelector(".next-button");
+      t2 = t4._eval$1("~(1)?")._as(new A.main_closure(t2));
+      type$.nullable_void_Function._as(null);
+      A._EventStreamSubscription$(t3._target, t3._eventType, t2, false, t4._precomputed1);
+      t4 = t1.querySelector(".play-button");
       t4.toString;
       t4 = J.get$onClick$x(t4);
-      t3 = t4.$ti;
-      A._EventStreamSubscription$(t4._target, t4._eventType, t3._eval$1("~(1)?")._as(new A.main_closure1(audioPlayer)), false, t3._precomputed1);
-      t3 = t1.querySelector(".previous-button");
-      t3.toString;
-      t3 = J.get$onClick$x(t3);
-      t4 = t3.$ti;
-      A._EventStreamSubscription$(t3._target, t3._eventType, t4._eval$1("~(1)?")._as(new A.main_closure2(audioPlayer)), false, t4._precomputed1);
-      t4 = type$.Element;
-      A.checkTypeBound(t4, t4, "T", "querySelectorAll");
+      t2 = t4.$ti;
+      A._EventStreamSubscription$(t4._target, t4._eventType, t2._eval$1("~(1)?")._as(new A.main_closure0(audioPlayer)), false, t2._precomputed1);
+      t2 = t1.querySelector(".next-button");
+      t2.toString;
+      t2 = J.get$onClick$x(t2);
+      t4 = t2.$ti;
+      A._EventStreamSubscription$(t2._target, t2._eventType, t4._eval$1("~(1)?")._as(new A.main_closure1(audioPlayer)), false, t4._precomputed1);
+      t4 = t1.querySelector(".previous-button");
+      t4.toString;
+      t4 = J.get$onClick$x(t4);
+      t2 = t4.$ti;
+      A._EventStreamSubscription$(t4._target, t4._eventType, t2._eval$1("~(1)?")._as(new A.main_closure2(audioPlayer)), false, t2._precomputed1);
+      t2 = type$.Element;
+      A.checkTypeBound(t2, t2, "T", "querySelectorAll");
       selectPhraseButtons = new A._FrozenElementList(t1.querySelectorAll(".select-phrase"), type$._FrozenElementList_Element);
       selectPhraseButtons.forEach$1(selectPhraseButtons, new A.main_closure3(audioPlayer));
+      t1 = t1.querySelector(".switch-button");
+      t1.toString;
+      t1 = J.get$onClick$x(t1);
+      t2 = t1.$ti;
+      A._EventStreamSubscription$(t1._target, t1._eventType, t2._eval$1("~(1)?")._as(new A.main_closure4()), false, t2._precomputed1);
     },
-    main_closure: function main_closure() {
+    main_closure: function main_closure(t0) {
+      this.openSectionMenuButton = t0;
     },
     main_closure0: function main_closure0(t0) {
       this.audioPlayer = t0;
@@ -3986,6 +3992,8 @@
     main__closure: function main__closure(t0, t1) {
       this.audioPlayer = t0;
       this.phraseNumber = t1;
+    },
+    main_closure4: function main_closure4() {
     },
     Phrase: function Phrase(t0, t1, t2, t3) {
       var _ = this;
@@ -4039,10 +4047,8 @@
       J.set$innerHtml$x(t2, html);
       t2 = t1.querySelector(_s10_).style;
       t2.display = "block";
-      t2 = t1.querySelector(_s10_).style;
-      t2.height = "100%";
       t1 = t1.querySelector(_s10_).style;
-      t1.minHeight = "100%";
+      t1.minHeight = "90%";
       t1 = $.ScriptPool__instance;
       if (t1 == null) {
         t1 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
@@ -4068,16 +4074,11 @@
     SectionMenu_setup__closure: function SectionMenu_setup__closure(t0) {
       this.section = t0;
     },
-    SectionMenu_setup___closure: function SectionMenu_setup___closure() {
-    },
     SectionMenu__generate_closure: function SectionMenu__generate_closure() {
     },
     SectionMenu__generate_closure0: function SectionMenu__generate_closure0() {
     },
     SectionMenu__sectionPhraseList_closure: function SectionMenu__sectionPhraseList_closure() {
-    },
-    throwLateFieldADI(fieldName) {
-      return A.throwExpression(new A.LateError("Field '" + fieldName + "' has been assigned during initialization."));
     },
     ViewService_updateNavBar(section, phrase) {
       var t1 = document,
@@ -4089,21 +4090,34 @@
       J.set$innerHtml$x(t1, "No : " + phrase.phraseNumber);
     },
     ViewService_updateSentenceBox(phrase) {
-      var t1 = document,
+      var t1, t2;
+      if (J.$eq$($.$get$ViewService__viewMode(), $.$get$ViewMode_Text())) {
+        t1 = document;
         t2 = t1.querySelector(".eng-sentence");
-      t2.toString;
-      J.set$innerHtml$x(t2, "<span>English</span>" + phrase.engText);
-      t1 = t1.querySelector(".jp-sentence");
-      t1.toString;
-      J.set$innerHtml$x(t1, "<span>Japanese</span>" + phrase.jpText);
+        t2.toString;
+        J.set$innerHtml$x(t2, "<span>English</span>" + phrase.engText);
+        t1 = t1.querySelector(".jp-sentence");
+        t1.toString;
+        J.set$innerHtml$x(t1, "<span>Japanese</span>" + phrase.jpText);
+      } else {
+        t1 = document.querySelector(".image-container");
+        t1.toString;
+        J.set$innerHtml$x(t1, '<img src="resources/images/' + phrase.phraseNumber + '.png" alt="\u82f1\u8a9e">');
+      }
     },
     ViewService_updateSelectPhraseButton(currentPhrase, nowPlaying) {
       var t1 = document,
         t2 = t1.querySelector(".active-select-phrase");
       if (t2 != null)
         t2.className = "select-phrase lni lni-play";
-      if (nowPlaying)
-        t1.querySelector("#select-phrase-" + currentPhrase.phraseNumber).className = "active-select-phrase lni lni-stop";
+      t2 = t1.querySelector(".active-select-phrase-text");
+      if (t2 != null)
+        t2.className = "";
+      if (nowPlaying) {
+        t2 = currentPhrase.phraseNumber;
+        t1.querySelector("#select-phrase-" + t2).className = "active-select-phrase lni lni-stop";
+        t1.querySelector("#select-phrase-text-" + t2).className = "active-select-phrase-text";
+      }
     },
     ViewService_updatePlayButton(nowPlaying) {
       var t2,
@@ -4114,6 +4128,58 @@
         t2.set$innerHtml(t1, '<i class="lni lni-stop"></i>');
       else
         t2.set$innerHtml(t1, '<i class="lni lni-play"></i>');
+    },
+    ViewService_updateSectionMenu(section) {
+      var t1 = document,
+        t2 = t1.querySelector(".active-select-section");
+      if (t2 != null)
+        t2.className = "uk-link-reset";
+      t1.querySelector("#select-section-" + section.sectionNumber).className = "active-select-section uk-link-reset";
+    },
+    ViewService_updateSectionItems(section) {
+      var t2, t3,
+        t1 = $.ScriptPool__instance;
+      if (t1 == null) {
+        t1 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+        t1._fetchData$0();
+        $.ScriptPool__instance = t1;
+      }
+      B.JSArray_methods.forEach$1(t1._sectionList, new A.ViewService_updateSectionItems_closure());
+      t1 = section.sectionNumber;
+      t2 = "#section-" + t1;
+      t3 = document;
+      t2 = t3.querySelector(t2).style;
+      t2.display = "block";
+      t1 = t3.querySelector("#section-" + t1).style;
+      t1.minHeight = "90%";
+    },
+    ViewMode$_(_value) {
+      return new A.ViewMode(_value);
+    },
+    ViewService_updateSectionItems_closure: function ViewService_updateSectionItems_closure() {
+    },
+    ViewMode: function ViewMode(t0) {
+      this._value = t0;
+    },
+    printString(string) {
+      if (typeof dartPrint == "function") {
+        dartPrint(string);
+        return;
+      }
+      if (typeof console == "object" && typeof console.log != "undefined") {
+        console.log(string);
+        return;
+      }
+      if (typeof window == "object")
+        return;
+      if (typeof print == "function") {
+        print(string);
+        return;
+      }
+      throw "Unable to print message: " + String(string);
+    },
+    throwLateFieldADI(fieldName) {
+      return A.throwExpression(new A.LateError("Field '" + fieldName + "' has been assigned during initialization."));
     }
   },
   J = {
@@ -6995,7 +7061,7 @@
         A._EventStreamSubscription$(t1._target, t1._eventType, t2._eval$1("~(1)?")._as(new A.DuoAudioPlayer_closure1(_this, seekbar)), false, t2._precomputed1);
       }
     },
-    toSection$1(section) {
+    toSection$2$continuePlaying(section, continuePlaying) {
       var t1, _this = this;
       _this._currentSection = section;
       t1 = section._phraseList;
@@ -7004,9 +7070,11 @@
       _this._currentPhrase = t1[0];
       _this._audioElement.currentTime = 0;
       if (_this._nowPlaying)
-        _this.stop$0(0);
+        _this.play$0(0);
       A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
       A.ViewService_updateSentenceBox(_this._currentPhrase);
+      A.ViewService_updateSectionMenu(_this._currentSection);
+      A.ViewService_updateSectionItems(section);
     },
     toPhrase$2$continuePlaying(phrase, continuePlaying) {
       var _this = this,
@@ -7023,16 +7091,10 @@
         _this.play$0(0);
       A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
       A.ViewService_updateSentenceBox(_this._currentPhrase);
+      A.ViewService_updateSectionMenu(_this._currentSection);
     },
     toPhrase$1(phrase) {
       return this.toPhrase$2$continuePlaying(phrase, true);
-    },
-    stop$0(_) {
-      var _this = this;
-      _this._audioElement.pause();
-      _this._nowPlaying = false;
-      A.ViewService_updatePlayButton(false);
-      A.ViewService_updateSelectPhraseButton(_this._currentPhrase, _this._nowPlaying);
     },
     play$0(_) {
       var _this = this,
@@ -7043,6 +7105,7 @@
       _this._nowPlaying = true;
       A.ViewService_updatePlayButton(true);
       A.ViewService_updateSelectPhraseButton(_this._currentPhrase, _this._nowPlaying);
+      A.ViewService_updateSectionMenu(_this._currentSection);
     },
     skipNext$0() {
       var t1, t2, _this = this;
@@ -7061,7 +7124,7 @@
             t1._fetchData$0();
             $.ScriptPool__instance = t1;
           }
-          _this.toSection$1(t1.getSection$1(1));
+          _this.toSection$2$continuePlaying(t1.getSection$1(1), _this._nowPlaying);
         } else {
           t1 = _this._currentSection;
           t2 = $.ScriptPool__instance;
@@ -7070,7 +7133,7 @@
             t2._fetchData$0();
             $.ScriptPool__instance = t2;
           }
-          _this.toSection$1(t2.getSection$1(t1.sectionNumber + 1));
+          _this.toSection$2$continuePlaying(t2.getSection$1(t1.sectionNumber + 1), _this._nowPlaying);
         }
       } else {
         t1 = $.ScriptPool__instance;
@@ -7130,7 +7193,8 @@
     call$1($event) {
       var t1, sectionMenu, t2,
         _s23_ = ".section-menu-container",
-        _s12_ = ".content-box";
+        _s12_ = ".content-box",
+        _s16_ = ".image-container";
       type$.MouseEvent._as($event);
       t1 = document;
       sectionMenu = t1.querySelector(".section-menu");
@@ -7141,16 +7205,22 @@
         t2.height = "100%";
         t2 = t1.querySelector(_s23_).style;
         t2.height = "40%";
-        t1 = t1.querySelector(_s12_).style;
-        t1.height = "50%";
+        t2 = t1.querySelector(_s12_).style;
+        t2.height = "50vh";
+        t1 = t1.querySelector(_s16_).style;
+        t1.height = "50vh";
+        J.set$innerHtml$x(this.openSectionMenuButton, '<i class="lni lni-chevron-down"></i>');
       } else {
         t2.display = "none";
         t2 = sectionMenu.style;
         t2.height = "0";
         t2 = t1.querySelector(_s23_).style;
         t2.height = "0";
-        t1 = t1.querySelector(_s12_).style;
-        t1.height = "90%";
+        t2 = t1.querySelector(_s12_).style;
+        t2.height = "90vh";
+        t1 = t1.querySelector(_s16_).style;
+        t1.height = "90vh";
+        J.set$innerHtml$x(this.openSectionMenuButton, '<i class="lni lni-chevron-up"></i>');
       }
     },
     $signature: 1
@@ -7160,9 +7230,12 @@
       var t1;
       type$.MouseEvent._as($event);
       t1 = this.audioPlayer;
-      if (t1._nowPlaying)
-        t1.stop$0(0);
-      else
+      if (t1._nowPlaying) {
+        t1._audioElement.pause();
+        t1._nowPlaying = false;
+        A.ViewService_updatePlayButton(false);
+        A.ViewService_updateSelectPhraseButton(t1._currentPhrase, t1._nowPlaying);
+      } else
         t1.play$0(0);
     },
     $signature: 1
@@ -7194,7 +7267,7 @@
             t2._fetchData$0();
             $.ScriptPool__instance = t2;
           }
-          t1.toSection$1(t2.getSection$1(1));
+          t1.toSection$2$continuePlaying(t2.getSection$1(1), t1._nowPlaying);
         } else {
           t2 = t1._currentSection;
           t3 = $.ScriptPool__instance;
@@ -7203,7 +7276,7 @@
             t3._fetchData$0();
             $.ScriptPool__instance = t3;
           }
-          t1.toSection$1(t3.getSection$1(t2.sectionNumber - 1));
+          t1.toSection$2$continuePlaying(t3.getSection$1(t2.sectionNumber - 1), t1._nowPlaying);
         }
       } else {
         t2 = $.ScriptPool__instance;
@@ -7243,6 +7316,37 @@
         $.ScriptPool__instance = t1;
       }
       this.audioPlayer.toPhrase$1(t1.getPhrase$1(this.phraseNumber));
+    },
+    $signature: 1
+  };
+  A.main_closure4.prototype = {
+    call$1($event) {
+      var t1, t2, t3, t4,
+        _s13_ = ".sentence-box",
+        _s16_ = ".image-container";
+      type$.MouseEvent._as($event);
+      A.printString("onclick");
+      t1 = document;
+      t2 = t1.querySelector(".switch-button");
+      t2.toString;
+      t3 = $.$get$ViewService__viewMode();
+      t4 = $.$get$ViewMode_Text();
+      if (J.$eq$(t3, t4)) {
+        t3 = t1.querySelector(_s13_).style;
+        t3.display = "none";
+        t1 = t1.querySelector(_s16_).style;
+        t1.display = "";
+        $.ViewService__viewMode = $.$get$ViewMode_Image();
+        J.set$innerHtml$x(t2, '<i class="lni lni-image"></i>');
+      } else {
+        t3 = t1.querySelector(_s13_).style;
+        t3.display = "";
+        t1 = t1.querySelector(_s16_).style;
+        t1.display = "none";
+        $.ViewService__viewMode = t4;
+        J.set$innerHtml$x(t2, '<i class="lni lni-bold"></i>');
+      }
+      $event.stopPropagation();
     },
     $signature: 1
   };
@@ -7361,40 +7465,10 @@
   };
   A.SectionMenu_setup__closure.prototype = {
     call$1($event) {
-      var t1, t2, t3;
       type$.MouseEvent._as($event);
-      t1 = $.ScriptPool__instance;
-      if (t1 == null) {
-        t1 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-        t1._fetchData$0();
-        $.ScriptPool__instance = t1;
-      }
-      B.JSArray_methods.forEach$1(t1._sectionList, new A.SectionMenu_setup___closure());
-      t1 = this.section.sectionNumber;
-      t2 = "#section-" + t1;
-      t3 = document;
-      t2 = t3.querySelector(t2).style;
-      t2.display = "block";
-      t2 = t3.querySelector("#section-" + t1).style;
-      t2.height = "100%";
-      t1 = t3.querySelector("#section-" + t1).style;
-      t1.minHeight = "100%";
+      A.ViewService_updateSectionItems(this.section);
     },
     $signature: 1
-  };
-  A.SectionMenu_setup___closure.prototype = {
-    call$1(section) {
-      var t1 = type$.Section._as(section).sectionNumber,
-        t2 = "#section-" + t1,
-        t3 = document;
-      t2 = t3.querySelector(t2).style;
-      t2.display = "none";
-      t2 = t3.querySelector("#section-" + t1).style;
-      t2.height = "0";
-      t1 = t3.querySelector("#section-" + t1).style;
-      t1.minHeight = "0";
-    },
-    $signature: 3
   };
   A.SectionMenu__generate_closure.prototype = {
     call$1(section) {
@@ -7411,10 +7485,36 @@
   };
   A.SectionMenu__sectionPhraseList_closure.prototype = {
     call$1(phrase) {
+      var t1;
       type$.Phrase._as(phrase);
-      return '<li>\n    <i class="select-phrase lni lni-play" id="select-phrase-' + phrase.phraseNumber + '"></i>\n    <p>' + phrase.engText + "</p>\n</li>";
+      t1 = phrase.phraseNumber;
+      return '<li>\n    <i class="select-phrase lni lni-play" id="select-phrase-' + t1 + '"></i>\n    <p id="select-phrase-text-' + t1 + '">' + phrase.engText + "</p>\n</li>";
     },
     $signature: 29
+  };
+  A.ViewService_updateSectionItems_closure.prototype = {
+    call$1(section) {
+      var t1 = type$.Section._as(section).sectionNumber,
+        t2 = "#section-" + t1,
+        t3 = document;
+      t2 = t3.querySelector(t2).style;
+      t2.display = "none";
+      t2 = t3.querySelector("#section-" + t1).style;
+      t2.height = "0";
+      t1 = t3.querySelector("#section-" + t1).style;
+      t1.minHeight = "0";
+    },
+    $signature: 3
+  };
+  A.ViewMode.prototype = {
+    $eq(_, other) {
+      if (other == null)
+        return false;
+      if (other instanceof A.ViewMode)
+        return other._value === this._value;
+      else
+        return false;
+    }
   };
   (function aliases() {
     var _ = J.Interceptor.prototype;
@@ -7444,7 +7544,7 @@
       _inherit = hunkHelpers.inherit,
       _inheritMany = hunkHelpers.inheritMany;
     _inherit(A.Object, null);
-    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.SentinelValue, A.Iterable, A.ListIterator, A.Iterator, A.ConstantMap, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A._StackTrace, A.Closure, A.MapMixin, A.LinkedHashMapCell, A.LinkedHashMapKeyIterator, A.JSSyntaxRegExp, A._MatchImplementation, A._AllMatchesIterator, A.Rti, A._FunctionParameters, A._Type, A._TimerImpl, A.AsyncError, A._Completer, A._FutureListener, A._Future, A._AsyncCallbackEntry, A.Stream, A.StreamSubscription, A._Zone, A.__SetBase_Object_SetMixin, A._LinkedHashSetCell, A._LinkedHashSetIterator, A._ListBase_Object_ListMixin, A.ListMixin, A.SetMixin, A.StackOverflowError, A._Exception, A.FormatException, A.Null, A._StringStackTrace, A.StringBuffer, A.CssStyleDeclarationBase, A.EventStreamProvider, A._Html5NodeValidator, A.ImmutableListMixin, A.NodeValidatorBuilder, A._SimpleNodeValidator, A._SvgNodeValidator, A.FixedSizeListIterator, A._SameOriginUriPolicy, A._ValidatingTreeSanitizer, A.NullRejectionException, A.DuoAudioPlayer, A.Phrase, A.ScriptPool, A.Section]);
+    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.SentinelValue, A.Iterable, A.ListIterator, A.Iterator, A.ConstantMap, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A._StackTrace, A.Closure, A.MapMixin, A.LinkedHashMapCell, A.LinkedHashMapKeyIterator, A.JSSyntaxRegExp, A._MatchImplementation, A._AllMatchesIterator, A.Rti, A._FunctionParameters, A._Type, A._TimerImpl, A.AsyncError, A._Completer, A._FutureListener, A._Future, A._AsyncCallbackEntry, A.Stream, A.StreamSubscription, A._Zone, A.__SetBase_Object_SetMixin, A._LinkedHashSetCell, A._LinkedHashSetIterator, A._ListBase_Object_ListMixin, A.ListMixin, A.SetMixin, A.StackOverflowError, A._Exception, A.FormatException, A.Null, A._StringStackTrace, A.StringBuffer, A.CssStyleDeclarationBase, A.EventStreamProvider, A._Html5NodeValidator, A.ImmutableListMixin, A.NodeValidatorBuilder, A._SimpleNodeValidator, A._SvgNodeValidator, A.FixedSizeListIterator, A._SameOriginUriPolicy, A._ValidatingTreeSanitizer, A.NullRejectionException, A.DuoAudioPlayer, A.Phrase, A.ScriptPool, A.Section, A.ViewMode]);
     _inheritMany(J.Interceptor, [J.JSBool, J.JSNull, J.JavaScriptObject, J.JSArray, J.JSNumber, J.JSString]);
     _inheritMany(J.JavaScriptObject, [J.LegacyJavaScriptObject, A.EventTarget, A._CssStyleDeclaration_JavaScriptObject_CssStyleDeclarationBase, A.DomException, A.DomImplementation, A.DomRectReadOnly, A.Event, A.Location, A._NodeList_JavaScriptObject_ListMixin, A.__NamedNodeMap_JavaScriptObject_ListMixin]);
     _inheritMany(J.LegacyJavaScriptObject, [J.PlainJavaScriptObject, J.UnknownJavaScriptObject, J.JavaScriptFunction]);
@@ -7457,7 +7557,7 @@
     _inherit(A.WhereIterator, A.Iterator);
     _inherit(A.ConstantStringMap, A.ConstantMap);
     _inherit(A.NullError, A.TypeError);
-    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.Element_Element$html_closure, A._EventStreamSubscription_closure, A.NodeValidatorBuilder_allowsElement_closure, A.NodeValidatorBuilder_allowsAttribute_closure, A._SimpleNodeValidator_closure, A._SimpleNodeValidator_closure0, A._TemplatingNodeValidator_closure, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.DuoAudioPlayer_closure, A.DuoAudioPlayer_closure0, A.DuoAudioPlayer_closure1, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3, A.main__closure, A.ScriptPool_getSection_closure, A.ScriptPool_getPhrase_closure, A.ScriptPool_getPhrase__closure, A.SectionMenu_setup_closure, A.SectionMenu_setup__closure, A.SectionMenu_setup___closure, A.SectionMenu__generate_closure, A.SectionMenu__generate_closure0, A.SectionMenu__sectionPhraseList_closure]);
+    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.Element_Element$html_closure, A._EventStreamSubscription_closure, A.NodeValidatorBuilder_allowsElement_closure, A.NodeValidatorBuilder_allowsAttribute_closure, A._SimpleNodeValidator_closure, A._SimpleNodeValidator_closure0, A._TemplatingNodeValidator_closure, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.DuoAudioPlayer_closure, A.DuoAudioPlayer_closure0, A.DuoAudioPlayer_closure1, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3, A.main__closure, A.main_closure4, A.ScriptPool_getSection_closure, A.ScriptPool_getPhrase_closure, A.ScriptPool_getPhrase__closure, A.SectionMenu_setup_closure, A.SectionMenu_setup__closure, A.SectionMenu__generate_closure, A.SectionMenu__generate_closure0, A.SectionMenu__sectionPhraseList_closure, A.ViewService_updateSectionItems_closure]);
     _inheritMany(A.TearOffClosure, [A.StaticClosure, A.BoundClosure]);
     _inherit(A._AssertionError, A.AssertionError);
     _inherit(A.MapBase, A.MapMixin);
@@ -8413,7 +8513,8 @@
     $.ScriptPool__instance = null;
   })();
   (function lazyInitializers() {
-    var _lazyFinal = hunkHelpers.lazyFinal;
+    var _lazyFinal = hunkHelpers.lazyFinal,
+      _lazy = hunkHelpers.lazy;
     _lazyFinal($, "DART_CLOSURE_PROPERTY_NAME", "$get$DART_CLOSURE_PROPERTY_NAME", () => A.getIsolateAffinityTag("_$dart_dartClosure"));
     _lazyFinal($, "TypeErrorDecoder_noSuchMethodPattern", "$get$TypeErrorDecoder_noSuchMethodPattern", () => A.TypeErrorDecoder_extractPattern(A.TypeErrorDecoder_provokeCallErrorOn({
       toString: function() {
@@ -8462,6 +8563,9 @@
     _lazyFinal($, "_AsyncRun__scheduleImmediateClosure", "$get$_AsyncRun__scheduleImmediateClosure", () => A._AsyncRun__initializeScheduleImmediate());
     _lazyFinal($, "_hashSeed", "$get$_hashSeed", () => A.objectHashCode(B.Type_Object_xQ6));
     _lazyFinal($, "_Html5NodeValidator__allowedElements", "$get$_Html5NodeValidator__allowedElements", () => A.LinkedHashSet_LinkedHashSet$from(["A", "ABBR", "ACRONYM", "ADDRESS", "AREA", "ARTICLE", "ASIDE", "AUDIO", "B", "BDI", "BDO", "BIG", "BLOCKQUOTE", "BR", "BUTTON", "CANVAS", "CAPTION", "CENTER", "CITE", "CODE", "COL", "COLGROUP", "COMMAND", "DATA", "DATALIST", "DD", "DEL", "DETAILS", "DFN", "DIR", "DIV", "DL", "DT", "EM", "FIELDSET", "FIGCAPTION", "FIGURE", "FONT", "FOOTER", "FORM", "H1", "H2", "H3", "H4", "H5", "H6", "HEADER", "HGROUP", "HR", "I", "IFRAME", "IMG", "INPUT", "INS", "KBD", "LABEL", "LEGEND", "LI", "MAP", "MARK", "MENU", "METER", "NAV", "NOBR", "OL", "OPTGROUP", "OPTION", "OUTPUT", "P", "PRE", "PROGRESS", "Q", "S", "SAMP", "SECTION", "SELECT", "SMALL", "SOURCE", "SPAN", "STRIKE", "STRONG", "SUB", "SUMMARY", "SUP", "TABLE", "TBODY", "TD", "TEXTAREA", "TFOOT", "TH", "THEAD", "TIME", "TR", "TRACK", "TT", "U", "UL", "VAR", "VIDEO", "WBR"], type$.String));
+    _lazy($, "ViewService__viewMode", "$get$ViewService__viewMode", () => $.$get$ViewMode_Text());
+    _lazyFinal($, "ViewMode_Image", "$get$ViewMode_Image", () => A.ViewMode$_("Image"));
+    _lazyFinal($, "ViewMode_Text", "$get$ViewMode_Text", () => A.ViewMode$_("Text"));
   })();
   (function nativeSupport() {
     !function() {

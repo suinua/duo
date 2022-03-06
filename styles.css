@@ -6,17 +6,15 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: 'Roboto', sans-serif;
+  overflow-y: hidden;
 }
 
 .nav-bar {
-  position: fixed;
-  top: 0;
   height: 5%;
   width: 100%;
   display: block;
   background: white;
   border-bottom: solid 1px #EDF2F7;
-  padding: 10px;
   text-align: center;
 }
 
@@ -28,26 +26,31 @@ html, body {
   display: inline-block;
 }
 
-.bottom-nav-bar {
+.switch-button {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 1.7em;
+  right: 5%;
+  float: right;
   position: fixed;
+}
+
+.bottom-nav-bar {
   bottom: 0;
   height:5%;
   width: 100%;
   display: block;
   background: white;
   border-top: solid 1px #EDF2F7;
-  padding: 10px;
   text-align: center;
 }
 
 .previous-button {
-  margin-top: 1%;
   display: inline-block;
-  font-size: 130%;
+  font-size: 150%;
 }
 
 .play-button {
-  margin-top: 1%;
   display: inline-block;
   margin-right: 10%;
   margin-left: 10%;
@@ -55,7 +58,6 @@ html, body {
 }
 
 .next-button {
-  margin-top: 1%;
   display: inline-block;
   font-size: 130%;
 }
@@ -64,14 +66,17 @@ html, body {
   position: fixed;
   display: block;
   bottom: 10px;
-  right: 0;
+  right: 10px;
+  font-size: 130%;
+  transition-duration: 500ms;
 }
 
 .content-box {
   position: relative;
   display: table;
-  height: 50%;
+  height: 50vh;
   width: 100%;
+  overflow-y: scroll;
 }
 
 .sentence-box {
@@ -179,7 +184,8 @@ html, body {
 
 .section-number-list {
   overflow-x: scroll;
-  height: 20px;
+  font-size: 130%;
+  height: 30px;
   display: block;
   background: white;
   width: 100%;
@@ -225,3 +231,14 @@ html, body {
   font-size: 1.7em;
 }
 
+.active-select-phrase-text {
+  background: linear-gradient(to top, #ffe200 40%, transparent 30%);
+}
+
+.active-select-section {
+  background: linear-gradient(to top, #ffe200 40%, transparent 30%);
+}
+
+.image-container {
+  overflow-y: scroll;
+}
