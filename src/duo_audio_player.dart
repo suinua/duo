@@ -45,14 +45,16 @@ class DuoAudioPlayer {
     });
   }
 
-  void toSection(Section section) {
+  void toSection(Section section, {bool continuePlaying = true}) {
     _currentSection = section;
     _currentPhrase = section.getPhrase(0);
     _audioElement.currentTime = 0;
-    if (_nowPlaying) stop();
+    if (_nowPlaying) play();
 
     ViewService.updateNavBar(_currentSection, _currentPhrase);
     ViewService.updateSentenceBox(_currentPhrase);
+    ViewService.updateSectionMenu(_currentSection);
+    ViewService.updateSectionItems(section);
   }
 
   void toPhrase(Phrase phrase, {bool continuePlaying = true}) {
@@ -63,6 +65,7 @@ class DuoAudioPlayer {
 
     ViewService.updateNavBar(_currentSection, _currentPhrase);
     ViewService.updateSentenceBox(_currentPhrase);
+    ViewService.updateSectionMenu(_currentSection);
   }
 
   void stop() {
@@ -83,6 +86,7 @@ class DuoAudioPlayer {
 
     ViewService.updatePlayButton(_nowPlaying);
     ViewService.updateSelectPhraseButton(_currentPhrase, _nowPlaying);
+    ViewService.updateSectionMenu(_currentSection);
   }
 
   void skipNext() {
@@ -92,10 +96,11 @@ class DuoAudioPlayer {
       //最後のSectionだったら最初のSectionに
       if (_currentSection.sectionNumber ==
           ScriptPool().sectionList.last.sectionNumber) {
-        toSection(ScriptPool().getSection(1));
+        toSection(ScriptPool().getSection(1), continuePlaying: _nowPlaying);
       } else {
         var nextSectionNumber = _currentSection.sectionNumber + 1;
-        toSection(ScriptPool().getSection(nextSectionNumber));
+        toSection(ScriptPool().getSection(nextSectionNumber),
+            continuePlaying: _nowPlaying);
       }
     } else {
       toPhrase(ScriptPool().getPhrase(_currentPhrase.phraseNumber + 1),
@@ -110,10 +115,10 @@ class DuoAudioPlayer {
       //最初のSectionだったら戻す
       if (_currentSection.sectionNumber ==
           ScriptPool().sectionList.first.sectionNumber) {
-        toSection(ScriptPool().getSection(1));
+        toSection(ScriptPool().getSection(1), continuePlaying: _nowPlaying);
       } else {
         var previousSectionNumber = _currentSection.sectionNumber - 1;
-        toSection(ScriptPool().getSection(previousSectionNumber));
+        toSection(ScriptPool().getSection(previousSectionNumber), continuePlaying: _nowPlaying);
       }
     } else {
       toPhrase(ScriptPool().getPhrase(_currentPhrase.phraseNumber - 1),

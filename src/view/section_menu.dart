@@ -2,6 +2,7 @@ import 'dart:html';
 
 import '../model/section.dart';
 import '../pool/script_pool.dart';
+import 'view_service.dart';
 
 class SectionMenu {
   static void setup() {
@@ -9,21 +10,12 @@ class SectionMenu {
     querySelector('.section-menu-container')!.innerHtml = html;
 
     querySelector('#section-1')!.style.display = 'block';
-    querySelector('#section-1')!.style.height = '100%';
-    querySelector('#section-1')!.style.minHeight = '100%';
+    querySelector('#section-1')!.style.minHeight = '90%';
 
     ScriptPool().sectionList.forEach((section) {
       var selectSectionButton = querySelector('#select-section-${section.sectionNumber}')!;
       selectSectionButton.onClick.listen((event) {
-        ScriptPool().sectionList.forEach((section) {
-          querySelector('#section-${section.sectionNumber}')!.style.display = 'none';
-          querySelector('#section-${section.sectionNumber}')!.style.height = '0';
-          querySelector('#section-${section.sectionNumber}')!.style.minHeight = '0';
-        });
-
-        querySelector('#section-${section.sectionNumber}')!.style.display = 'block';
-        querySelector('#section-${section.sectionNumber}')!.style.height = '100%';
-        querySelector('#section-${section.sectionNumber}')!.style.minHeight = '100%';
+        ViewService.updateSectionItems(section);
       });
     });
   }
@@ -45,7 +37,7 @@ class SectionMenu {
     var phraseListAsHtml = section.phraseList.map((phrase) => '''
 <li>
     <i class="select-phrase lni lni-play" id="select-phrase-${phrase.phraseNumber}"></i>
-    <p>${phrase.engText}</p>
+    <p id="select-phrase-text-${phrase.phraseNumber}">${phrase.engText}</p>
 </li>''').join();
 
     return '''

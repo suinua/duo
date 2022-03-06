@@ -18,12 +18,16 @@ void main() {
       sectionMenu.style.display ='block';
       sectionMenu.style.height ='100%';
       querySelector('.section-menu-container')!.style.height = '40%';
-      querySelector('.content-box')!.style.height = '50%';
+      querySelector('.content-box')!.style.height = '50vh';
+      querySelector('.image-container')!.style.height = '50vh';
+      openSectionMenuButton.innerHtml = '<i class="lni lni-chevron-down"></i>';
     } else {
       sectionMenu.style.display ='none';
       sectionMenu.style.height ='0';
       querySelector('.section-menu-container')!.style.height = '0';
-      querySelector('.content-box')!.style.height = '90%';
+      querySelector('.content-box')!.style.height = '90vh';
+      querySelector('.image-container')!.style.height = '90vh';
+      openSectionMenuButton.innerHtml = '<i class="lni lni-chevron-up"></i>';
     }
   });
 
@@ -57,5 +61,12 @@ void main() {
     selectPhraseButton.onClick.listen((event) {
       audioPlayer.toPhrase(ScriptPool().getPhrase(phraseNumber));
     });
+  });
+
+  var switchButton = querySelector('.switch-button')!;
+  switchButton.onClick.listen((event) {
+    print('onclick');
+    ViewService.switchViewMode();
+    event.stopPropagation();
   });
 }
