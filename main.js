@@ -4090,20 +4090,16 @@
       J.set$innerHtml$x(t1, "No : " + phrase.phraseNumber);
     },
     ViewService_updateSentenceBox(phrase) {
-      var t1, t2;
-      if (J.$eq$($.$get$ViewService__viewMode(), $.$get$ViewMode_Text())) {
-        t1 = document;
+      var t1 = document,
         t2 = t1.querySelector(".eng-sentence");
-        t2.toString;
-        J.set$innerHtml$x(t2, "<span>English</span>" + phrase.engText);
-        t1 = t1.querySelector(".jp-sentence");
-        t1.toString;
-        J.set$innerHtml$x(t1, "<span>Japanese</span>" + phrase.jpText);
-      } else {
-        t1 = document.querySelector(".image-container");
-        t1.toString;
-        J.set$innerHtml$x(t1, '<img src="resources/images/' + phrase.phraseNumber + '.png" alt="\u82f1\u8a9e">');
-      }
+      t2.toString;
+      J.set$innerHtml$x(t2, "<span>English</span>" + phrase.engText);
+      t2 = t1.querySelector(".jp-sentence");
+      t2.toString;
+      J.set$innerHtml$x(t2, "<span>Japanese</span>" + phrase.jpText);
+      t1 = t1.querySelector(".image-container");
+      t1.toString;
+      J.set$innerHtml$x(t1, '<img src="resources/images/' + phrase.phraseNumber + '.png" alt="\u82f1\u8a9e">');
     },
     ViewService_updateSelectPhraseButton(currentPhrase, nowPlaying) {
       var t1 = document,
@@ -7335,12 +7331,12 @@
         t3 = t1.querySelector(_s13_).style;
         t3.display = "none";
         t1 = t1.querySelector(_s16_).style;
-        t1.display = "";
+        t1.display = "block";
         $.ViewService__viewMode = $.$get$ViewMode_Image();
         J.set$innerHtml$x(t2, '<i class="lni lni-image"></i>');
       } else {
         t3 = t1.querySelector(_s13_).style;
-        t3.display = "";
+        t3.display = "block";
         t1 = t1.querySelector(_s16_).style;
         t1.display = "none";
         $.ViewService__viewMode = t4;
