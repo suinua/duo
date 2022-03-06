@@ -14,25 +14,24 @@ class ViewService {
   }
 
   static void updateSentenceBox(Phrase phrase) {
-    if (_viewMode == ViewMode.Text) {
-      querySelector('.eng-sentence')!.innerHtml =
-          '<span>English</span>' + phrase.engText;
-      querySelector('.jp-sentence')!.innerHtml =
-          '<span>Japanese</span>' + phrase.jpText;
-    } else {
-      querySelector('.image-container')!.innerHtml = '<img src="resources/images/${phrase.phraseNumber}.png" alt="英語">';
-    }
+    querySelector('.eng-sentence')!.innerHtml =
+        '<span>English</span>' + phrase.engText;
+    querySelector('.jp-sentence')!.innerHtml =
+        '<span>Japanese</span>' + phrase.jpText;
+
+    querySelector('.image-container')!.innerHtml =
+        '<img src="resources/images/${phrase.phraseNumber}.png" alt="英語">';
   }
 
   static void switchViewMode() {
     var switchButton = querySelector('.switch-button')!;
     if (_viewMode == ViewMode.Text) {
       querySelector('.sentence-box')!.style.display = 'none';
-      querySelector('.image-container')!.style.display = '';
+      querySelector('.image-container')!.style.display = 'block';
       _viewMode = ViewMode.Image;
       switchButton.innerHtml = '<i class="lni lni-image"></i>';
     } else {
-      querySelector('.sentence-box')!.style.display = '';
+      querySelector('.sentence-box')!.style.display = 'block';
       querySelector('.image-container')!.style.display = 'none';
       _viewMode = ViewMode.Text;
       switchButton.innerHtml = '<i class="lni lni-bold"></i>';
@@ -64,12 +63,14 @@ class ViewService {
   static void updateSectionMenu(Section section) {
     querySelector('.active-select-section')?.className = 'uk-link-reset';
 
-    querySelector('#select-section-${section.sectionNumber}')!.className = 'active-select-section uk-link-reset';
+    querySelector('#select-section-${section.sectionNumber}')!.className =
+        'active-select-section uk-link-reset';
   }
 
   static void updateSectionItems(Section section) {
     ScriptPool().sectionList.forEach((section) {
-      querySelector('#section-${section.sectionNumber}')!.style.display = 'none';
+      querySelector('#section-${section.sectionNumber}')!.style.display =
+          'none';
       querySelector('#section-${section.sectionNumber}')!.style.height = '0';
       querySelector('#section-${section.sectionNumber}')!.style.minHeight = '0';
     });
@@ -81,6 +82,7 @@ class ViewService {
 
 class ViewMode {
   final String _value;
+
   ViewMode._(this._value);
 
   static final Image = ViewMode._('Image');

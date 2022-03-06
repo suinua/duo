@@ -240,5 +240,8 @@ html, body {
 }
 
 .image-container {
+  height: 50vh;
   overflow-y: scroll;
+  display: none;
+  text-align: center;
 }
