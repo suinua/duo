@@ -59,7 +59,11 @@ void main() {
   selectPhraseButtons.forEach((selectPhraseButton) {
     var phraseNumber = int.parse(selectPhraseButton.id.replaceAll(RegExp('(.*)select-phrase-'), ''));
     selectPhraseButton.onClick.listen((event) {
-      audioPlayer.toPhrase(ScriptPool().getPhrase(phraseNumber));
+      if (audioPlayer.nowPlaying && audioPlayer.currentPhrase.phraseNumber == phraseNumber) {
+          audioPlayer.stop();
+      } else {
+        audioPlayer.toPhrase(ScriptPool().getPhrase(phraseNumber));
+      }
     });
   });
 

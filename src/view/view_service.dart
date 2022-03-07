@@ -38,16 +38,17 @@ class ViewService {
     }
   }
 
-  static void updateSelectPhraseButton(Phrase currentPhrase, bool nowPlaying) {
-    querySelector('.active-select-phrase')?.className =
-        'select-phrase lni lni-play';
+  static void updateSelectPhraseText(Phrase currentPhrase) {
     querySelector('.active-select-phrase-text')?.className = '';
+    querySelector('#select-phrase-text-${currentPhrase.phraseNumber}')!.className = 'active-select-phrase-text';
+  }
 
+  static void updatePlayPhraseButton(Phrase currentPhrase, bool nowPlaying) {
+    querySelector('.active-select-phrase')?.className =
+    'select-phrase lni lni-play';
     if (nowPlaying) {
       querySelector('#select-phrase-${currentPhrase.phraseNumber}')!.className =
-          'active-select-phrase lni lni-stop';
-      querySelector('#select-phrase-text-${currentPhrase.phraseNumber}')!
-          .className = 'active-select-phrase-text';
+      'active-select-phrase lni lni-stop';
     }
   }
 

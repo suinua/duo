@@ -11,6 +11,7 @@ class DuoAudioPlayer {
   bool _nowPlaying;
 
   bool get nowPlaying => _nowPlaying;
+  Phrase get currentPhrase => _currentPhrase;
 
   final AudioElement _audioElement;
 
@@ -66,6 +67,8 @@ class DuoAudioPlayer {
     ViewService.updateNavBar(_currentSection, _currentPhrase);
     ViewService.updateSentenceBox(_currentPhrase);
     ViewService.updateSectionMenu(_currentSection);
+    ViewService.updatePlayPhraseButton(_currentPhrase, _nowPlaying);
+    ViewService.updateSelectPhraseText(_currentPhrase);
   }
 
   void stop() {
@@ -73,7 +76,7 @@ class DuoAudioPlayer {
 
     _nowPlaying = false;
     ViewService.updatePlayButton(_nowPlaying);
-    ViewService.updateSelectPhraseButton(_currentPhrase, _nowPlaying);
+    ViewService.updatePlayPhraseButton(_currentPhrase, _nowPlaying);
   }
 
   void play({double time = 0}) {
@@ -85,7 +88,8 @@ class DuoAudioPlayer {
     _nowPlaying = true;
 
     ViewService.updatePlayButton(_nowPlaying);
-    ViewService.updateSelectPhraseButton(_currentPhrase, _nowPlaying);
+    ViewService.updateSelectPhraseText(_currentPhrase);
+    ViewService.updatePlayPhraseButton(_currentPhrase, _nowPlaying);
     ViewService.updateSectionMenu(_currentSection);
   }
 
