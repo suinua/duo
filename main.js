@@ -4101,19 +4101,20 @@
       t1.toString;
       J.set$innerHtml$x(t1, '<img src="resources/images/' + phrase.phraseNumber + '.png" alt="\u82f1\u8a9e">');
     },
-    ViewService_updateSelectPhraseButton(currentPhrase, nowPlaying) {
+    ViewService_updateSelectPhraseText(currentPhrase) {
+      var t1 = document,
+        t2 = t1.querySelector(".active-select-phrase-text");
+      if (t2 != null)
+        t2.className = "";
+      t1.querySelector("#select-phrase-text-" + currentPhrase.phraseNumber).className = "active-select-phrase-text";
+    },
+    ViewService_updatePlayPhraseButton(currentPhrase, nowPlaying) {
       var t1 = document,
         t2 = t1.querySelector(".active-select-phrase");
       if (t2 != null)
         t2.className = "select-phrase lni lni-play";
-      t2 = t1.querySelector(".active-select-phrase-text");
-      if (t2 != null)
-        t2.className = "";
-      if (nowPlaying) {
-        t2 = currentPhrase.phraseNumber;
-        t1.querySelector("#select-phrase-" + t2).className = "active-select-phrase lni lni-stop";
-        t1.querySelector("#select-phrase-text-" + t2).className = "active-select-phrase-text";
-      }
+      if (nowPlaying)
+        t1.querySelector("#select-phrase-" + currentPhrase.phraseNumber).className = "active-select-phrase lni lni-stop";
     },
     ViewService_updatePlayButton(nowPlaying) {
       var t2,
@@ -7088,9 +7089,18 @@
       A.ViewService_updateNavBar(_this._currentSection, _this._currentPhrase);
       A.ViewService_updateSentenceBox(_this._currentPhrase);
       A.ViewService_updateSectionMenu(_this._currentSection);
+      A.ViewService_updatePlayPhraseButton(_this._currentPhrase, _this._nowPlaying);
+      A.ViewService_updateSelectPhraseText(_this._currentPhrase);
     },
     toPhrase$1(phrase) {
       return this.toPhrase$2$continuePlaying(phrase, true);
+    },
+    stop$0(_) {
+      var _this = this;
+      _this._audioElement.pause();
+      _this._nowPlaying = false;
+      A.ViewService_updatePlayButton(false);
+      A.ViewService_updatePlayPhraseButton(_this._currentPhrase, _this._nowPlaying);
     },
     play$0(_) {
       var _this = this,
@@ -7100,7 +7110,8 @@
       A.promiseToFuture(t1.play(), type$.dynamic);
       _this._nowPlaying = true;
       A.ViewService_updatePlayButton(true);
-      A.ViewService_updateSelectPhraseButton(_this._currentPhrase, _this._nowPlaying);
+      A.ViewService_updateSelectPhraseText(_this._currentPhrase);
+      A.ViewService_updatePlayPhraseButton(_this._currentPhrase, _this._nowPlaying);
       A.ViewService_updateSectionMenu(_this._currentSection);
     },
     skipNext$0() {
@@ -7226,12 +7237,9 @@
       var t1;
       type$.MouseEvent._as($event);
       t1 = this.audioPlayer;
-      if (t1._nowPlaying) {
-        t1._audioElement.pause();
-        t1._nowPlaying = false;
-        A.ViewService_updatePlayButton(false);
-        A.ViewService_updateSelectPhraseButton(t1._currentPhrase, t1._nowPlaying);
-      } else
+      if (t1._nowPlaying)
+        t1.stop$0(0);
+      else
         t1.play$0(0);
     },
     $signature: 1
@@ -7303,15 +7311,20 @@
   };
   A.main__closure.prototype = {
     call$1($event) {
-      var t1;
+      var t1, t2;
       type$.MouseEvent._as($event);
-      t1 = $.ScriptPool__instance;
-      if (t1 == null) {
-        t1 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
-        t1._fetchData$0();
-        $.ScriptPool__instance = t1;
+      t1 = this.audioPlayer;
+      if (t1._nowPlaying && t1._currentPhrase.phraseNumber === this.phraseNumber)
+        t1.stop$0(0);
+      else {
+        t2 = $.ScriptPool__instance;
+        if (t2 == null) {
+          t2 = new A.ScriptPool(A._setArrayType([], type$.JSArray_Section));
+          t2._fetchData$0();
+          $.ScriptPool__instance = t2;
+        }
+        t1.toPhrase$1(t2.getPhrase$1(this.phraseNumber));
       }
-      this.audioPlayer.toPhrase$1(t1.getPhrase$1(this.phraseNumber));
     },
     $signature: 1
   };
