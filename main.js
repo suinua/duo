@@ -3965,7 +3965,7 @@
       A._EventStreamSubscription$(t4._target, t4._eventType, t2._eval$1("~(1)?")._as(new A.main_closure2(audioPlayer)), false, t2._precomputed1);
       t2 = type$.Element;
       A.checkTypeBound(t2, t2, "T", "querySelectorAll");
-      selectPhraseButtons = new A._FrozenElementList(t1.querySelectorAll(".select-phrase"), type$._FrozenElementList_Element);
+      selectPhraseButtons = new A._FrozenElementList(t1.querySelectorAll(".select-phrase-button"), type$._FrozenElementList_Element);
       selectPhraseButtons.forEach$1(selectPhraseButtons, new A.main_closure3(audioPlayer));
       t1 = t1.querySelector(".switch-button");
       t1.toString;
@@ -4115,11 +4115,11 @@
     },
     ViewService_updatePlayPhraseButton(currentPhrase, nowPlaying) {
       var t1 = document,
-        t2 = t1.querySelector(".active-select-phrase");
+        t2 = t1.querySelector(".active-select-phrase-button");
       if (t2 != null)
-        t2.className = "select-phrase lni lni-play";
+        t2.className = "select-phrase-button lni lni-play";
       if (nowPlaying)
-        t1.querySelector("#select-phrase-" + currentPhrase.phraseNumber).className = "active-select-phrase lni lni-stop";
+        t1.querySelector("#select-phrase-button-" + currentPhrase.phraseNumber).className = "active-select-phrase-button lni lni-stop";
     },
     ViewService_updatePlayButton(nowPlaying) {
       var t2,
@@ -7398,7 +7398,7 @@
       var t1, t2, phraseNumber, t3;
       type$.Element._as(selectPhraseButton);
       t1 = selectPhraseButton.id;
-      t2 = A.RegExp_RegExp("(.*)select-phrase-");
+      t2 = A.RegExp_RegExp("(.*)select-phrase-button-");
       phraseNumber = A.int_parse(A.stringReplaceAllUnchecked(t1, t2, ""));
       t1 = J.get$onClick$x(selectPhraseButton);
       t2 = t1.$ti;
@@ -7596,7 +7596,7 @@
       var t1;
       type$.Phrase._as(phrase);
       t1 = phrase.phraseNumber;
-      return '<li>\n    <i class="select-phrase lni lni-play" id="select-phrase-' + t1 + '"></i>\n    <p id="select-phrase-text-' + t1 + '">' + phrase.engText + "</p>\n</li>";
+      return '<li class="select-phrase">\n    <div class="select-phrase-button-container">\n      <i class="select-phrase-button lni lni-play" id="select-phrase-button-' + t1 + '"></i>\n    </div>\n    \n    <div class="select-phrase-text-container">\n      <p>' + phrase.engText + '</p>\n      <p id="select-phrase-text-' + t1 + '">' + phrase.jpText + "</p>\n    </div>\n</li>";
     },
     $signature: 29
   };

@@ -178,7 +178,7 @@ html, body {
 }
 
 .section-items p {
-  display: inline;
+  margin: 0;
   text-align: center;
 }
 
@@ -243,4 +243,16 @@ html, body {
   overflow-y: scroll;
   display: none;
   text-align: center;
+}
+
+.select-phrase {
+  position: relative;
+}
+
+.select-phrase-button-container {
+  position: absolute;
+  top: 45%;
+}
+
+.select-phrase-text-container {
 }
