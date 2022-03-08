@@ -29,12 +29,12 @@ class ViewService {
       querySelector('.sentence-box')!.style.display = 'none';
       querySelector('.image-container')!.style.display = 'block';
       _viewMode = ViewMode.Image;
-      switchButton.innerHtml = '<i class="lni lni-image"></i>';
+      switchButton.innerHtml = '<i class="lni lni-bold"></i>';
     } else {
       querySelector('.sentence-box')!.style.display = 'block';
       querySelector('.image-container')!.style.display = 'none';
       _viewMode = ViewMode.Text;
-      switchButton.innerHtml = '<i class="lni lni-bold"></i>';
+      switchButton.innerHtml = '<i class="lni lni-image"></i>';
     }
   }
 
