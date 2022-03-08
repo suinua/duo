@@ -7,7 +7,10 @@ import 'view_service.dart';
 class SectionMenu {
   static void setup() {
     var html = _generate(ScriptPool().sectionList);
-    querySelector('.section-menu-container')!.innerHtml = html;
+    var validator = NodeValidatorBuilder.common()
+      ..allowElement('div', attributes: ['uk-slider']);
+    querySelector('.section-menu-container')!
+        .setInnerHtml(html, validator: validator);
 
     querySelector('#section-1')!.style.display = 'block';
     querySelector('#section-1')!.style.minHeight = '90%';
@@ -22,11 +25,16 @@ class SectionMenu {
 
   static String _generate(List<Section> sections) {
     var sectionNumbers = sections.map(
-        (section) => '<a class="uk-link-reset" id="select-section-${section.sectionNumber}">${section.sectionNumber}</a>\n').join();
+        (section) => '<li class="select-section"><a class="uk-link-reset" id="select-section-${section.sectionNumber}">${section.sectionNumber}</a></li>\n').join();
+
     return '''
 <ul class="section-menu">
   <li class="section-number-list">
-      $sectionNumbers
+      <div uk-slider>
+        <ul class="uk-slider-items uk-child-width-1-6">
+              $sectionNumbers
+        </ul>
+      </div>
   </li>
   ${sections.map((section) => _sectionPhraseList(section)).join()}
 </ul>
