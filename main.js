@@ -7445,14 +7445,14 @@
         t1 = t1.querySelector(_s16_).style;
         t1.display = "block";
         $.ViewService__viewMode = $.$get$ViewMode_Image();
-        J.set$innerHtml$x(t2, '<i class="lni lni-image"></i>');
+        J.set$innerHtml$x(t2, '<i class="lni lni-bold"></i>');
       } else {
         t3 = t1.querySelector(_s13_).style;
         t3.display = "block";
         t1 = t1.querySelector(_s16_).style;
         t1.display = "none";
         $.ViewService__viewMode = t4;
-        J.set$innerHtml$x(t2, '<i class="lni lni-bold"></i>');
+        J.set$innerHtml$x(t2, '<i class="lni lni-image"></i>');
       }
       $event.stopPropagation();
     },
