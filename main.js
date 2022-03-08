@@ -3622,22 +3622,20 @@
     StringBuffer: function StringBuffer(t0) {
       this._contents = t0;
     },
+    AnchorElement_AnchorElement() {
+      var e = document.createElement("a");
+      return e;
+    },
     AudioElement_AudioElement$_(src) {
       return new Audio();
     },
     Element_Element$html(html, treeSanitizer, validator) {
-      var t2, it, result,
+      var t2,
         t1 = document.body;
       t1.toString;
       t2 = type$._ChildNodeListLazy;
       t2 = new A.WhereIterable(new A._ChildNodeListLazy(B.BodyElement_methods.createFragment$3$treeSanitizer$validator(t1, html, treeSanitizer, validator)), t2._eval$1("bool(ListMixin.E)")._as(new A.Element_Element$html_closure()), t2._eval$1("WhereIterable<ListMixin.E>"));
-      it = t2.get$iterator(t2);
-      if (!it.moveNext$0())
-        A.throwExpression(A.IterableElementError_noElement());
-      result = it.get$current();
-      if (it.moveNext$0())
-        A.throwExpression(A.IterableElementError_tooMany());
-      return type$.Element._as(result);
+      return type$.Element._as(t2.get$single(t2));
     },
     Element__safeTagName(element) {
       var t1, exception,
@@ -3661,9 +3659,9 @@
       return new A._EventStreamSubscription(_target, _eventType, t1, false, $T._eval$1("_EventStreamSubscription<0>"));
     },
     _Html5NodeValidator$(uriPolicy) {
-      var e = document.createElement("a"),
-        t1 = new A._SameOriginUriPolicy(e, type$.Location._as(window.location));
-      t1 = new A._Html5NodeValidator(t1);
+      var t1 = A.AnchorElement_AnchorElement(),
+        t2 = type$.Location._as(window.location);
+      t1 = new A._Html5NodeValidator(new A._SameOriginUriPolicy(t1, t2));
       t1._Html5NodeValidator$1$uriPolicy(uriPolicy);
       return t1;
     },
@@ -3675,26 +3673,15 @@
       return true;
     },
     _Html5NodeValidator__uriAttributeValidator(element, attributeName, value, context) {
-      var t1, t2, t3;
       type$.Element._as(element);
       A._asString(attributeName);
       A._asString(value);
-      t1 = type$._Html5NodeValidator._as(context).uriPolicy;
-      t2 = t1._hiddenAnchor;
-      B.AnchorElement_methods.set$href(t2, value);
-      t3 = t2.hostname;
-      t1 = t1._loc;
-      if (!(t3 == t1.hostname && t2.port === t1.port && t2.protocol === t1.protocol))
-        if (t3 === "")
-          if (t2.port === "") {
-            t1 = t2.protocol;
-            t1 = t1 === ":" || t1 === "";
-          } else
-            t1 = false;
-        else
-          t1 = false;
-      else
-        t1 = true;
+      return type$._Html5NodeValidator._as(context).uriPolicy.allowsUri$1(value);
+    },
+    _CustomElementNodeValidator$(uriPolicy, allowedElements, allowedAttributes, allowedUriAttributes, allowTypeExtension, allowCustomTag) {
+      var t1 = type$.String;
+      t1 = new A._CustomElementNodeValidator(false, true, A.LinkedHashSet_LinkedHashSet(t1), A.LinkedHashSet_LinkedHashSet(t1), A.LinkedHashSet_LinkedHashSet(t1), uriPolicy);
+      t1._SimpleNodeValidator$4$allowedAttributes$allowedElements$allowedUriAttributes(uriPolicy, allowedAttributes, allowedElements, allowedUriAttributes);
       return t1;
     },
     _TemplatingNodeValidator$() {
@@ -3822,6 +3809,9 @@
     NodeValidatorBuilder: function NodeValidatorBuilder(t0) {
       this._validators = t0;
     },
+    NodeValidatorBuilder_allowCustomElement_closure: function NodeValidatorBuilder_allowCustomElement_closure(t0) {
+      this.tagNameUpper = t0;
+    },
     NodeValidatorBuilder_allowsElement_closure: function NodeValidatorBuilder_allowsElement_closure(t0) {
       this.element = t0;
     },
@@ -3835,6 +3825,15 @@
     _SimpleNodeValidator_closure: function _SimpleNodeValidator_closure() {
     },
     _SimpleNodeValidator_closure0: function _SimpleNodeValidator_closure0() {
+    },
+    _CustomElementNodeValidator: function _CustomElementNodeValidator(t0, t1, t2, t3, t4, t5) {
+      var _ = this;
+      _.allowTypeExtension = t0;
+      _.allowCustomTag = t1;
+      _.allowedElements = t2;
+      _.allowedAttributes = t3;
+      _.allowedUriAttributes = t4;
+      _.uriPolicy = t5;
     },
     _TemplatingNodeValidator: function _TemplatingNodeValidator(t0, t1, t2, t3, t4) {
       var _ = this;
@@ -4032,7 +4031,7 @@
     Section__sortPhraseList_closure: function Section__sortPhraseList_closure() {
     },
     SectionMenu_setup() {
-      var html, t2,
+      var html, validator, t2,
         _s10_ = "#section-1",
         t1 = $.ScriptPool__instance;
       if (t1 == null) {
@@ -4041,10 +4040,16 @@
         $.ScriptPool__instance = t1;
       }
       html = A.SectionMenu__generate(t1._sectionList);
+      t1 = A._setArrayType([], type$.JSArray_NodeValidator);
+      validator = new A.NodeValidatorBuilder(t1);
+      B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
+      B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
+      t1 = type$.nullable_Iterable_String;
+      validator.allowCustomElement$4$attributes$uriAttributes$uriPolicy("div", t1._as(A._setArrayType(["uk-slider"], type$.JSArray_String)), t1._as(null), null);
       t1 = document;
       t2 = t1.querySelector(".section-menu-container");
       t2.toString;
-      J.set$innerHtml$x(t2, html);
+      J.setInnerHtml$2$validator$x(t2, html, validator);
       t2 = t1.querySelector(_s10_).style;
       t2.display = "block";
       t1 = t1.querySelector(_s10_).style;
@@ -4061,7 +4066,7 @@
       var t1 = A._arrayInstanceType(sections),
         t2 = t1._eval$1("String(1)");
       t1 = t1._eval$1("MappedListIterable<1,String>");
-      return '<ul class="section-menu">\n  <li class="section-number-list">\n      ' + new A.MappedListIterable(sections, t2._as(new A.SectionMenu__generate_closure()), t1).join$0(0) + "\n  </li>\n  " + new A.MappedListIterable(sections, t2._as(new A.SectionMenu__generate_closure0()), t1).join$0(0) + "\n</ul>\n    ";
+      return '<ul class="section-menu">\n  <li class="section-number-list">\n      <div uk-slider>\n        <ul class="uk-slider-items uk-child-width-1-6">\n              ' + new A.MappedListIterable(sections, t2._as(new A.SectionMenu__generate_closure()), t1).join$0(0) + "\n        </ul>\n      </div>\n  </li>\n  " + new A.MappedListIterable(sections, t2._as(new A.SectionMenu__generate_closure0()), t1).join$0(0) + "\n</ul>\n    ";
     },
     SectionMenu__sectionPhraseList(section) {
       var t1 = section._phraseList,
@@ -4361,6 +4366,9 @@
     replaceFirst$2$s(receiver, a0, a1) {
       return J.getInterceptor$s(receiver).replaceFirst$2(receiver, a0, a1);
     },
+    setInnerHtml$2$validator$x(receiver, a0, a1) {
+      return J.getInterceptor$x(receiver).setInnerHtml$2$validator(receiver, a0, a1);
+    },
     toLowerCase$0$s(receiver) {
       return J.getInterceptor$s(receiver).toLowerCase$0(receiver);
     },
@@ -4469,6 +4477,10 @@
       if (!!receiver.fixed$length)
         A.throwExpression(A.UnsupportedError$("add"));
       receiver.push(value);
+    },
+    where$1(receiver, f) {
+      var t1 = A._arrayInstanceType(receiver);
+      return new A.WhereIterable(receiver, t1._eval$1("bool(1)")._as(f), t1._eval$1("WhereIterable<1>"));
     },
     forEach$1(receiver, f) {
       var end, i;
@@ -5141,19 +5153,19 @@
     call$1(o) {
       return this.getTag(o);
     },
-    $signature: 12
+    $signature: 13
   };
   A.initHooks_closure0.prototype = {
     call$2(o, tag) {
       return this.getUnknownTag(o, tag);
     },
-    $signature: 13
+    $signature: 14
   };
   A.initHooks_closure1.prototype = {
     call$1(tag) {
       return this.prototypeForTag(A._asString(tag));
     },
-    $signature: 14
+    $signature: 15
   };
   A.JSSyntaxRegExp.prototype = {
     toString$0(_) {
@@ -5265,7 +5277,7 @@
       t2 = this.span;
       t1.firstChild ? t1.removeChild(t2) : t1.appendChild(t2);
     },
-    $signature: 15
+    $signature: 16
   };
   A._AsyncRun__scheduleImmediateJsOverride_internalCallback.prototype = {
     call$0() {
@@ -5526,7 +5538,7 @@
     call$2(error, stackTrace) {
       this.$this._completeError$2(type$.Object._as(error), type$.StackTrace._as(stackTrace));
     },
-    $signature: 16
+    $signature: 17
   };
   A._Future__chainForeignFuture_closure1.prototype = {
     call$0() {
@@ -5591,7 +5603,7 @@
     call$1(_) {
       return this.originalSource;
     },
-    $signature: 17
+    $signature: 18
   };
   A._Future__propagateToListeners_handleValueCallback.prototype = {
     call$0() {
@@ -5908,7 +5920,7 @@
       t1._contents = t2 + ": ";
       t1._contents += A.S(v);
     },
-    $signature: 18
+    $signature: 19
   };
   A.MapMixin.prototype = {
     forEach$1(_, action) {
@@ -6085,6 +6097,16 @@
         ++count;
       return count;
     },
+    get$single(_) {
+      var result,
+        it = this.get$iterator(this);
+      if (!it.moveNext$0())
+        throw A.wrapException(A.IterableElementError_noElement());
+      result = it.get$current();
+      if (it.moveNext$0())
+        throw A.wrapException(A.IterableElementError_tooMany());
+      return result;
+    },
     toString$0(_) {
       return A.IterableBase_iterableToShortString(this, "(", ")");
     }
@@ -6258,16 +6280,18 @@
     createFragment$3$treeSanitizer$validator(receiver, html, treeSanitizer, validator) {
       var t1, t2, contextElement, fragment;
       if (treeSanitizer == null) {
-        t1 = $.Element__defaultValidator;
-        if (t1 == null) {
-          t1 = A._setArrayType([], type$.JSArray_NodeValidator);
-          t2 = new A.NodeValidatorBuilder(t1);
-          B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
-          B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
-          $.Element__defaultValidator = t2;
-          validator = t2;
-        } else
-          validator = t1;
+        if (validator == null) {
+          t1 = $.Element__defaultValidator;
+          if (t1 == null) {
+            t1 = A._setArrayType([], type$.JSArray_NodeValidator);
+            t2 = new A.NodeValidatorBuilder(t1);
+            B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
+            B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
+            $.Element__defaultValidator = t2;
+            validator = t2;
+          } else
+            validator = t1;
+        }
         t1 = $.Element__defaultSanitizer;
         if (t1 == null) {
           t1 = new A._ValidatingTreeSanitizer(validator);
@@ -6277,7 +6301,8 @@
           t1.validator = validator;
           treeSanitizer = t1;
         }
-      }
+      } else if (validator != null)
+        throw A.wrapException(A.ArgumentError$("validator can only be passed if treeSanitizer is null", null));
       if ($.Element__parseDocument == null) {
         t1 = document;
         t2 = t1.implementation;
@@ -6329,9 +6354,12 @@
     set$innerHtml(receiver, html) {
       this.setInnerHtml$1(receiver, html);
     },
-    setInnerHtml$1(receiver, html) {
+    setInnerHtml$2$validator(receiver, html, validator) {
       this.set$text(receiver, null);
-      receiver.appendChild(this.createFragment$3$treeSanitizer$validator(receiver, html, null, null));
+      receiver.appendChild(this.createFragment$3$treeSanitizer$validator(receiver, html, null, validator));
+    },
+    setInnerHtml$1($receiver, html) {
+      return this.setInnerHtml$2$validator($receiver, html, null);
     },
     set$_innerHtml(receiver, value) {
       receiver.innerHTML = value;
@@ -6348,7 +6376,7 @@
     call$1(e) {
       return type$.Element._is(type$.Node._as(e));
     },
-    $signature: 19
+    $signature: 20
   };
   A.Event.prototype = {$isEvent: 1};
   A.EventTarget.prototype = {
@@ -6507,14 +6535,17 @@
     }
   };
   A.TemplateElement.prototype = {
-    setInnerHtml$1(receiver, html) {
+    setInnerHtml$2$validator(receiver, html, validator) {
       var t1, fragment;
       this.set$text(receiver, null);
       t1 = receiver.content;
       t1.toString;
       J._clearChildren$0$x(t1);
-      fragment = this.createFragment$3$treeSanitizer$validator(receiver, html, null, null);
+      fragment = this.createFragment$3$treeSanitizer$validator(receiver, html, null, validator);
       receiver.content.appendChild(fragment);
+    },
+    setInnerHtml$1($receiver, html) {
+      return this.setInnerHtml$2$validator($receiver, html, null);
     },
     $isTemplateElement: 1
   };
@@ -6681,6 +6712,18 @@
     }
   };
   A.NodeValidatorBuilder.prototype = {
+    allowCustomElement$4$attributes$uriAttributes$uriPolicy(tagName, attributes, uriAttributes, uriPolicy) {
+      var tagNameUpper, t2, t3, t4,
+        t1 = type$.nullable_Iterable_String;
+      t1._as(attributes);
+      t1._as(uriAttributes);
+      tagNameUpper = tagName.toUpperCase();
+      t1 = A._arrayInstanceType(attributes);
+      t2 = t1._eval$1("String(1)")._as(new A.NodeValidatorBuilder_allowCustomElement_closure(tagNameUpper));
+      t3 = A.AnchorElement_AnchorElement();
+      t4 = type$.Location._as(window.location);
+      B.JSArray_methods.add$1(this._validators, A._CustomElementNodeValidator$(new A._SameOriginUriPolicy(t3, t4), A._setArrayType([tagNameUpper], type$.JSArray_String), new A.MappedListIterable(attributes, t2, t1._eval$1("MappedListIterable<1,String>")), null, false, true));
+    },
     allowsElement$1(element) {
       return B.JSArray_methods.any$1(this._validators, new A.NodeValidatorBuilder_allowsElement_closure(element));
     },
@@ -6689,24 +6732,34 @@
     },
     $isNodeValidator: 1
   };
+  A.NodeValidatorBuilder_allowCustomElement_closure.prototype = {
+    call$1($name) {
+      A._asString($name);
+      return this.tagNameUpper + "::" + $name.toLowerCase();
+    },
+    $signature: 7
+  };
   A.NodeValidatorBuilder_allowsElement_closure.prototype = {
     call$1(v) {
       return type$.NodeValidator._as(v).allowsElement$1(this.element);
     },
-    $signature: 7
+    $signature: 8
   };
   A.NodeValidatorBuilder_allowsAttribute_closure.prototype = {
     call$1(v) {
       return type$.NodeValidator._as(v).allowsAttribute$3(this.element, this.attributeName, this.value);
     },
-    $signature: 7
+    $signature: 8
   };
   A._SimpleNodeValidator.prototype = {
     _SimpleNodeValidator$4$allowedAttributes$allowedElements$allowedUriAttributes(uriPolicy, allowedAttributes, allowedElements, allowedUriAttributes) {
-      var legalAttributes, extraUriAttributes, t1;
+      var t1, legalAttributes, extraUriAttributes;
       this.allowedElements.addAll$1(0, allowedElements);
-      legalAttributes = allowedAttributes.where$1(0, new A._SimpleNodeValidator_closure());
-      extraUriAttributes = allowedAttributes.where$1(0, new A._SimpleNodeValidator_closure0());
+      if (allowedAttributes == null)
+        allowedAttributes = B.List_empty;
+      t1 = J.getInterceptor$ax(allowedAttributes);
+      legalAttributes = t1.where$1(allowedAttributes, new A._SimpleNodeValidator_closure());
+      extraUriAttributes = t1.where$1(allowedAttributes, new A._SimpleNodeValidator_closure0());
       this.allowedAttributes.addAll$1(0, legalAttributes);
       t1 = this.allowedUriAttributes;
       t1.addAll$1(0, B.List_empty);
@@ -6742,13 +6795,35 @@
     call$1(x) {
       return !B.JSArray_methods.contains$1(B.List_yrN, A._asString(x));
     },
-    $signature: 8
+    $signature: 9
   };
   A._SimpleNodeValidator_closure0.prototype = {
     call$1(x) {
       return B.JSArray_methods.contains$1(B.List_yrN, A._asString(x));
     },
-    $signature: 8
+    $signature: 9
+  };
+  A._CustomElementNodeValidator.prototype = {
+    allowsElement$1(element) {
+      var isAttr, t1, _this = this;
+      if (_this.allowTypeExtension) {
+        isAttr = element.getAttribute("is");
+        if (isAttr != null) {
+          t1 = _this.allowedElements;
+          return t1.contains$1(0, isAttr.toUpperCase()) && t1.contains$1(0, A.Element__safeTagName(element));
+        }
+      }
+      return _this.allowCustomTag && _this.allowedElements.contains$1(0, A.Element__safeTagName(element));
+    },
+    allowsAttribute$3(element, attributeName, value) {
+      var _this = this;
+      if (_this.allowsElement$1(element)) {
+        if (_this.allowTypeExtension && attributeName === "is" && _this.allowedElements.contains$1(0, value.toUpperCase()))
+          return true;
+        return _this.super$_SimpleNodeValidator$allowsAttribute(element, attributeName, value);
+      }
+      return false;
+    }
   };
   A._TemplatingNodeValidator.prototype = {
     allowsAttribute$3(element, attributeName, value) {
@@ -6765,7 +6840,7 @@
     call$1(attr) {
       return "TEMPLATE::" + A._asString(attr);
     },
-    $signature: 20
+    $signature: 7
   };
   A._SvgNodeValidator.prototype = {
     allowsElement$1(element) {
@@ -6808,7 +6883,28 @@
     },
     $isIterator: 1
   };
-  A._SameOriginUriPolicy.prototype = {$isUriPolicy: 1};
+  A._SameOriginUriPolicy.prototype = {
+    allowsUri$1(uri) {
+      var t2, t3,
+        t1 = this._hiddenAnchor;
+      B.AnchorElement_methods.set$href(t1, uri);
+      t2 = t1.hostname;
+      t3 = this._loc;
+      if (!(t2 == t3.hostname && t1.port === t3.port && t1.protocol === t3.protocol))
+        if (t2 === "")
+          if (t1.port === "") {
+            t1 = t1.protocol;
+            t1 = t1 === ":" || t1 === "";
+          } else
+            t1 = false;
+        else
+          t1 = false;
+      else
+        t1 = true;
+      return t1;
+    },
+    $isUriPolicy: 1
+  };
   A._ValidatingTreeSanitizer.prototype = {
     sanitizeTree$1(node) {
       var previousTreeModifications,
@@ -7001,7 +7097,7 @@
       t1._asyncComplete$1(t2._eval$1("1/")._as(r));
       return null;
     },
-    $signature: 9
+    $signature: 10
   };
   A.promiseToFuture_closure0.prototype = {
     call$1(e) {
@@ -7009,7 +7105,7 @@
         return this.completer.completeError$1(new A.NullRejectionException(e === undefined));
       return this.completer.completeError$1(e);
     },
-    $signature: 9
+    $signature: 10
   };
   A.ScriptElement0.prototype = {$isScriptElement0: 1};
   A.SvgElement.prototype = {
@@ -7017,12 +7113,15 @@
       this.setInnerHtml$1(receiver, value);
     },
     createFragment$3$treeSanitizer$validator(receiver, svg, treeSanitizer, validator) {
-      var html, t2, fragment, svgFragment, root,
+      var t1, html, t2, fragment, svgFragment, root;
+      if (validator == null) {
         t1 = A._setArrayType([], type$.JSArray_NodeValidator);
-      B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
-      B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
-      B.JSArray_methods.add$1(t1, new A._SvgNodeValidator());
-      treeSanitizer = new A._ValidatingTreeSanitizer(new A.NodeValidatorBuilder(t1));
+        validator = new A.NodeValidatorBuilder(t1);
+        B.JSArray_methods.add$1(t1, A._Html5NodeValidator$(null));
+        B.JSArray_methods.add$1(t1, A._TemplatingNodeValidator$());
+        B.JSArray_methods.add$1(t1, new A._SvgNodeValidator());
+      }
+      treeSanitizer = new A._ValidatingTreeSanitizer(validator);
       html = '<svg version="1.1">' + svg + "</svg>";
       t1 = document;
       t2 = t1.body;
@@ -7482,15 +7581,15 @@
   A.SectionMenu__generate_closure.prototype = {
     call$1(section) {
       var t1 = type$.Section._as(section).sectionNumber;
-      return '<a class="uk-link-reset" id="select-section-' + t1 + '">' + t1 + "</a>\n";
+      return '<li class="select-section"><a class="uk-link-reset" id="select-section-' + t1 + '">' + t1 + "</a></li>\n";
     },
-    $signature: 10
+    $signature: 11
   };
   A.SectionMenu__generate_closure0.prototype = {
     call$1(section) {
       return A.SectionMenu__sectionPhraseList(type$.Section._as(section));
     },
-    $signature: 10
+    $signature: 11
   };
   A.SectionMenu__sectionPhraseList_closure.prototype = {
     call$1(phrase) {
@@ -7545,8 +7644,8 @@
     _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 4);
     _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 4);
     _static_0(A, "async___startMicrotaskLoop$closure", "_startMicrotaskLoop", 0);
-    _static(A, "html__Html5NodeValidator__standardAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__standardAttributeValidator"], 11, 0);
-    _static(A, "html__Html5NodeValidator__uriAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__uriAttributeValidator"], 11, 0);
+    _static(A, "html__Html5NodeValidator__standardAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__standardAttributeValidator"], 12, 0);
+    _static(A, "html__Html5NodeValidator__uriAttributeValidator$closure", 4, null, ["call$4"], ["_Html5NodeValidator__uriAttributeValidator"], 12, 0);
   })();
   (function inheritance() {
     var _mixin = hunkHelpers.mixin,
@@ -7566,7 +7665,7 @@
     _inherit(A.WhereIterator, A.Iterator);
     _inherit(A.ConstantStringMap, A.ConstantMap);
     _inherit(A.NullError, A.TypeError);
-    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.Element_Element$html_closure, A._EventStreamSubscription_closure, A.NodeValidatorBuilder_allowsElement_closure, A.NodeValidatorBuilder_allowsAttribute_closure, A._SimpleNodeValidator_closure, A._SimpleNodeValidator_closure0, A._TemplatingNodeValidator_closure, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.DuoAudioPlayer_closure, A.DuoAudioPlayer_closure0, A.DuoAudioPlayer_closure1, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3, A.main__closure, A.main_closure4, A.ScriptPool_getSection_closure, A.ScriptPool_getPhrase_closure, A.ScriptPool_getPhrase__closure, A.SectionMenu_setup_closure, A.SectionMenu_setup__closure, A.SectionMenu__generate_closure, A.SectionMenu__generate_closure0, A.SectionMenu__sectionPhraseList_closure, A.ViewService_updateSectionItems_closure]);
+    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.Element_Element$html_closure, A._EventStreamSubscription_closure, A.NodeValidatorBuilder_allowCustomElement_closure, A.NodeValidatorBuilder_allowsElement_closure, A.NodeValidatorBuilder_allowsAttribute_closure, A._SimpleNodeValidator_closure, A._SimpleNodeValidator_closure0, A._TemplatingNodeValidator_closure, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.DuoAudioPlayer_closure, A.DuoAudioPlayer_closure0, A.DuoAudioPlayer_closure1, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3, A.main__closure, A.main_closure4, A.ScriptPool_getSection_closure, A.ScriptPool_getPhrase_closure, A.ScriptPool_getPhrase__closure, A.SectionMenu_setup_closure, A.SectionMenu_setup__closure, A.SectionMenu__generate_closure, A.SectionMenu__generate_closure0, A.SectionMenu__sectionPhraseList_closure, A.ViewService_updateSectionItems_closure]);
     _inheritMany(A.TearOffClosure, [A.StaticClosure, A.BoundClosure]);
     _inherit(A._AssertionError, A.AssertionError);
     _inherit(A.MapBase, A.MapMixin);
@@ -7599,7 +7698,7 @@
     _inherit(A._EventStream, A.Stream);
     _inherit(A._ElementEventStreamImpl, A._EventStream);
     _inherit(A._EventStreamSubscription, A.StreamSubscription);
-    _inherit(A._TemplatingNodeValidator, A._SimpleNodeValidator);
+    _inheritMany(A._SimpleNodeValidator, [A._CustomElementNodeValidator, A._TemplatingNodeValidator]);
     _inherit(A.ScriptElement0, A.SvgElement);
     _mixin(A._ListBase_Object_ListMixin, A.ListMixin);
     _mixin(A.__SetBase_Object_SetMixin, A.SetMixin);
@@ -7613,12 +7712,12 @@
     typeUniverse: {eC: new Map(), tR: {}, eT: {}, tPV: {}, sEA: []},
     mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List"},
     mangledNames: {},
-    types: ["~()", "~(MouseEvent)", "~(Event)", "~(Section)", "~(~())", "Null(@)", "Null()", "bool(NodeValidator)", "bool(String)", "~(@)", "String(Section)", "bool(Element,String,String,_Html5NodeValidator)", "@(@)", "@(@,String)", "@(String)", "Null(~())", "Null(Object,StackTrace)", "_Future<@>(@)", "~(Object?,Object?)", "bool(Node)", "String(String)", "~(Node,Node?)", "~(Element)", "~(String,Map<String,Map<String,String>>)", "~(String,Map<String,String>)", "int(Section,Section)", "bool(Section)", "~(Phrase)", "int(Phrase,Phrase)", "String(Phrase)"],
+    types: ["~()", "~(MouseEvent)", "~(Event)", "~(Section)", "~(~())", "Null(@)", "Null()", "String(String)", "bool(NodeValidator)", "bool(String)", "~(@)", "String(Section)", "bool(Element,String,String,_Html5NodeValidator)", "@(@)", "@(@,String)", "@(String)", "Null(~())", "Null(Object,StackTrace)", "_Future<@>(@)", "~(Object?,Object?)", "bool(Node)", "~(Node,Node?)", "~(Element)", "~(String,Map<String,Map<String,String>>)", "~(String,Map<String,String>)", "int(Section,Section)", "bool(Section)", "~(Phrase)", "int(Phrase,Phrase)", "String(Phrase)"],
     interceptorsByTag: null,
     leafTags: null,
     arrayRti: Symbol("$ti")
   };
-  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","AElement":"SvgElement","GraphicsElement":"SvgElement","BRElement":"HtmlElement","ShadowRoot":"Node","DocumentFragment":"Node","XmlDocument":"Document","Window":"EventTarget","PointerEvent":"MouseEvent","VideoElement":"MediaElement","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSNull":{"Null":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[],"Pattern":[]},"LateError":{"Error":[]},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"Iterable":["1"]},"ListIterator":{"Iterator":["1"]},"MappedListIterable":{"ListIterable":["2"],"Iterable":["2"],"ListIterable.E":"2","Iterable.E":"2"},"WhereIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereIterator":{"Iterator":["1"]},"ConstantMap":{"Map":["1","2"]},"ConstantStringMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapMixin":["1","2"],"Map":["1","2"],"MapMixin.K":"1","MapMixin.V":"2"},"LinkedHashMapKeyIterable":{"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"JSSyntaxRegExp":{"Pattern":[]},"_MatchImplementation":{"RegExpMatch":[]},"_AllMatchesIterator":{"Iterator":["RegExpMatch"]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_AsyncCompleter":{"_Completer":["1"]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_LinkedHashSet":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"_LinkedHashSetIterator":{"Iterator":["1"]},"ListBase":{"ListMixin":["1"],"List":["1"],"Iterable":["1"]},"MapBase":{"MapMixin":["1","2"],"Map":["1","2"]},"MapMixin":{"Map":["1","2"]},"_SetBase":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"int":{"num":[]},"String":{"Pattern":[]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"Element":{"Node":[],"EventTarget":[]},"MouseEvent":{"Event":[]},"Node":{"EventTarget":[]},"_Html5NodeValidator":{"NodeValidator":[]},"HtmlElement":{"Element":[],"Node":[],"EventTarget":[]},"AnchorElement":{"Element":[],"Node":[],"EventTarget":[]},"AreaElement":{"Element":[],"Node":[],"EventTarget":[]},"AudioElement":{"Element":[],"Node":[],"EventTarget":[]},"BaseElement":{"Element":[],"Node":[],"EventTarget":[]},"BodyElement":{"Element":[],"Node":[],"EventTarget":[]},"CharacterData":{"Node":[],"EventTarget":[]},"Document":{"Node":[],"EventTarget":[]},"DomRectReadOnly":{"Rectangle":["num"]},"_FrozenElementList":{"ListMixin":["1"],"List":["1"],"Iterable":["1"],"ListMixin.E":"1"},"FormElement":{"Element":[],"Node":[],"EventTarget":[]},"HtmlDocument":{"Node":[],"EventTarget":[]},"MediaElement":{"Element":[],"Node":[],"EventTarget":[]},"_ChildNodeListLazy":{"ListMixin":["Node"],"List":["Node"],"Iterable":["Node"],"ListMixin.E":"Node"},"NodeList":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"SelectElement":{"Element":[],"Node":[],"EventTarget":[]},"TableElement":{"Element":[],"Node":[],"EventTarget":[]},"TableRowElement":{"Element":[],"Node":[],"EventTarget":[]},"TableSectionElement":{"Element":[],"Node":[],"EventTarget":[]},"TemplateElement":{"Element":[],"Node":[],"EventTarget":[]},"UIEvent":{"Event":[]},"_Attr":{"Node":[],"EventTarget":[]},"_DomRect":{"Rectangle":["num"]},"_NamedNodeMap":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"_AttributeMap":{"MapMixin":["String","String"],"Map":["String","String"]},"_ElementAttributeMap":{"MapMixin":["String","String"],"Map":["String","String"],"MapMixin.K":"String","MapMixin.V":"String"},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"NodeValidatorBuilder":{"NodeValidator":[]},"_SimpleNodeValidator":{"NodeValidator":[]},"_TemplatingNodeValidator":{"NodeValidator":[]},"_SvgNodeValidator":{"NodeValidator":[]},"FixedSizeListIterator":{"Iterator":["1"]},"_SameOriginUriPolicy":{"UriPolicy":[]},"_ValidatingTreeSanitizer":{"NodeTreeSanitizer":[]},"ScriptElement0":{"SvgElement":[],"Element":[],"Node":[],"EventTarget":[]},"SvgElement":{"Element":[],"Node":[],"EventTarget":[]}}'));
+  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","AElement":"SvgElement","GraphicsElement":"SvgElement","BRElement":"HtmlElement","ShadowRoot":"Node","DocumentFragment":"Node","XmlDocument":"Document","Window":"EventTarget","PointerEvent":"MouseEvent","VideoElement":"MediaElement","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSNull":{"Null":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[],"Pattern":[]},"LateError":{"Error":[]},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"Iterable":["1"]},"ListIterator":{"Iterator":["1"]},"MappedListIterable":{"ListIterable":["2"],"Iterable":["2"],"ListIterable.E":"2","Iterable.E":"2"},"WhereIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereIterator":{"Iterator":["1"]},"ConstantMap":{"Map":["1","2"]},"ConstantStringMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapMixin":["1","2"],"Map":["1","2"],"MapMixin.K":"1","MapMixin.V":"2"},"LinkedHashMapKeyIterable":{"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"JSSyntaxRegExp":{"Pattern":[]},"_MatchImplementation":{"RegExpMatch":[]},"_AllMatchesIterator":{"Iterator":["RegExpMatch"]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_AsyncCompleter":{"_Completer":["1"]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_LinkedHashSet":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"_LinkedHashSetIterator":{"Iterator":["1"]},"ListBase":{"ListMixin":["1"],"List":["1"],"Iterable":["1"]},"MapBase":{"MapMixin":["1","2"],"Map":["1","2"]},"MapMixin":{"Map":["1","2"]},"_SetBase":{"SetMixin":["1"],"Set":["1"],"Iterable":["1"]},"int":{"num":[]},"String":{"Pattern":[]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"Element":{"Node":[],"EventTarget":[]},"MouseEvent":{"Event":[]},"Node":{"EventTarget":[]},"_Html5NodeValidator":{"NodeValidator":[]},"HtmlElement":{"Element":[],"Node":[],"EventTarget":[]},"AnchorElement":{"Element":[],"Node":[],"EventTarget":[]},"AreaElement":{"Element":[],"Node":[],"EventTarget":[]},"AudioElement":{"Element":[],"Node":[],"EventTarget":[]},"BaseElement":{"Element":[],"Node":[],"EventTarget":[]},"BodyElement":{"Element":[],"Node":[],"EventTarget":[]},"CharacterData":{"Node":[],"EventTarget":[]},"Document":{"Node":[],"EventTarget":[]},"DomRectReadOnly":{"Rectangle":["num"]},"_FrozenElementList":{"ListMixin":["1"],"List":["1"],"Iterable":["1"],"ListMixin.E":"1"},"FormElement":{"Element":[],"Node":[],"EventTarget":[]},"HtmlDocument":{"Node":[],"EventTarget":[]},"MediaElement":{"Element":[],"Node":[],"EventTarget":[]},"_ChildNodeListLazy":{"ListMixin":["Node"],"List":["Node"],"Iterable":["Node"],"ListMixin.E":"Node"},"NodeList":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"SelectElement":{"Element":[],"Node":[],"EventTarget":[]},"TableElement":{"Element":[],"Node":[],"EventTarget":[]},"TableRowElement":{"Element":[],"Node":[],"EventTarget":[]},"TableSectionElement":{"Element":[],"Node":[],"EventTarget":[]},"TemplateElement":{"Element":[],"Node":[],"EventTarget":[]},"UIEvent":{"Event":[]},"_Attr":{"Node":[],"EventTarget":[]},"_DomRect":{"Rectangle":["num"]},"_NamedNodeMap":{"ListMixin":["Node"],"ImmutableListMixin":["Node"],"List":["Node"],"JavaScriptIndexingBehavior":["Node"],"Iterable":["Node"],"ListMixin.E":"Node","ImmutableListMixin.E":"Node"},"_AttributeMap":{"MapMixin":["String","String"],"Map":["String","String"]},"_ElementAttributeMap":{"MapMixin":["String","String"],"Map":["String","String"],"MapMixin.K":"String","MapMixin.V":"String"},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"NodeValidatorBuilder":{"NodeValidator":[]},"_SimpleNodeValidator":{"NodeValidator":[]},"_CustomElementNodeValidator":{"NodeValidator":[]},"_TemplatingNodeValidator":{"NodeValidator":[]},"_SvgNodeValidator":{"NodeValidator":[]},"FixedSizeListIterator":{"Iterator":["1"]},"_SameOriginUriPolicy":{"UriPolicy":[]},"_ValidatingTreeSanitizer":{"NodeTreeSanitizer":[]},"ScriptElement0":{"SvgElement":[],"Element":[],"Node":[],"EventTarget":[]},"SvgElement":{"Element":[],"Node":[],"EventTarget":[]}}'));
   A._Universe_addErasedTypes(init.typeUniverse, JSON.parse('{"EfficientLengthIterable":1,"StreamSubscription":1,"ListBase":1,"MapBase":2,"_SetBase":1,"_ListBase_Object_ListMixin":1,"__SetBase_Object_SetMixin":1}'));
   var string$ = {
     Error_: "Error handler must accept one Object or one Object and a StackTrace as arguments, and return a value of the returned future's type"
@@ -7687,6 +7786,7 @@
       legacy_Never: findType("0&*"),
       legacy_Object: findType("Object*"),
       nullable_Future_Null: findType("Future<Null>?"),
+      nullable_Iterable_String: findType("Iterable<String>?"),
       nullable_Object: findType("Object?"),
       nullable__FutureListener_dynamic_dynamic: findType("_FutureListener<@,@>?"),
       nullable__LinkedHashSetCell: findType("_LinkedHashSetCell?"),

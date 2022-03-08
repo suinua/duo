@@ -183,7 +183,6 @@ html, body {
 }
 
 .section-number-list {
-  overflow-x: scroll;
   font-size: 130%;
   height: 30px;
   display: block;
@@ -233,6 +232,10 @@ html, body {
 
 .active-select-phrase-text {
   background: linear-gradient(to top, #ffe200 40%, transparent 30%);
+}
+
+.select-section {
+  text-align: center;
 }
 
 .active-select-section {
