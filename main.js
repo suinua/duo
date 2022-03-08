@@ -7581,7 +7581,7 @@
   A.SectionMenu__generate_closure.prototype = {
     call$1(section) {
       var t1 = type$.Section._as(section).sectionNumber;
-      return '<li class="select-section"><a class="uk-link-reset" id="select-section-' + t1 + '">' + t1 + "</a></li>\n";
+      return '<li><a class="uk-link-reset" id="select-section-' + t1 + '">' + t1 + "</a></li>\n";
     },
     $signature: 11
   };
