@@ -43,9 +43,15 @@ class SectionMenu {
 
   static String _sectionPhraseList(Section section) {
     var phraseListAsHtml = section.phraseList.map((phrase) => '''
-<li>
-    <i class="select-phrase lni lni-play" id="select-phrase-${phrase.phraseNumber}"></i>
-    <p id="select-phrase-text-${phrase.phraseNumber}">${phrase.engText}</p>
+<li class="select-phrase">
+    <div class="select-phrase-button-container">
+      <i class="select-phrase-button lni lni-play" id="select-phrase-button-${phrase.phraseNumber}"></i>
+    </div>
+    
+    <div class="select-phrase-text-container">
+      <p>${phrase.engText}</p>
+      <p id="select-phrase-text-${phrase.phraseNumber}">${phrase.jpText}</p>
+    </div>
 </li>''').join();
 
     return '''

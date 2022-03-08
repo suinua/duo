@@ -44,11 +44,11 @@ class ViewService {
   }
 
   static void updatePlayPhraseButton(Phrase currentPhrase, bool nowPlaying) {
-    querySelector('.active-select-phrase')?.className =
-    'select-phrase lni lni-play';
+    querySelector('.active-select-phrase-button')?.className =
+    'select-phrase-button lni lni-play';
     if (nowPlaying) {
-      querySelector('#select-phrase-${currentPhrase.phraseNumber}')!.className =
-      'active-select-phrase lni lni-stop';
+      querySelector('#select-phrase-button-${currentPhrase.phraseNumber}')!.className =
+      'active-select-phrase-button lni lni-stop';
     }
   }
 

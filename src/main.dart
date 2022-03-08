@@ -55,9 +55,9 @@ void main() {
   });
 
   //phraseの選択
-  var selectPhraseButtons = querySelectorAll('.select-phrase');
+  var selectPhraseButtons = querySelectorAll('.select-phrase-button');
   selectPhraseButtons.forEach((selectPhraseButton) {
-    var phraseNumber = int.parse(selectPhraseButton.id.replaceAll(RegExp('(.*)select-phrase-'), ''));
+    var phraseNumber = int.parse(selectPhraseButton.id.replaceAll(RegExp('(.*)select-phrase-button-'), ''));
     selectPhraseButton.onClick.listen((event) {
       if (audioPlayer.nowPlaying && audioPlayer.currentPhrase.phraseNumber == phraseNumber) {
           audioPlayer.stop();
