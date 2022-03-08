@@ -25,7 +25,7 @@ class SectionMenu {
 
   static String _generate(List<Section> sections) {
     var sectionNumbers = sections.map(
-        (section) => '<li class="select-section"><a class="uk-link-reset" id="select-section-${section.sectionNumber}">${section.sectionNumber}</a></li>\n').join();
+        (section) => '<li><a class="uk-link-reset" id="select-section-${section.sectionNumber}">${section.sectionNumber}</a></li>\n').join();
 
     return '''
 <ul class="section-menu">

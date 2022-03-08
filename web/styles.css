@@ -198,8 +198,8 @@ html, body {
 
 .section-number-list::-webkit-scrollbar-thumb {}
 
-.section-number-list a {
-  margin-left: 50px;
+.section-number-list li {
+  text-align: center;
 }
 
 .seekbar {
@@ -232,10 +232,6 @@ html, body {
 
 .active-select-phrase-text {
   background: linear-gradient(to top, #ffe200 40%, transparent 30%);
-}
-
-.select-section {
-  text-align: center;
 }
 
 .active-select-section {
